@@ -99,6 +99,7 @@ class Curl {
         while($try) {
             $proxy = isset($proxies[$step]) ? $proxies[$step] : null;
             $this->url = $url;
+            $banned = false;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_TIMEOUT, 15);
@@ -169,7 +170,7 @@ class Curl {
 
             $step++;
             // чтобы обойти бан
-            $try = (($step < $steps) && ($http_code != 200)) && ($banned==false);
+            $try = ((($step < $steps) && ($http_code != 200))) || ($banned==true);
 
             if ($this->sleepMin > 0) {
                 sleep(rand($this->sleepMin, $this->sleepMax));
