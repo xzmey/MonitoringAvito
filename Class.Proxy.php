@@ -5,8 +5,6 @@
 class Proxy
 {
 
-    private $current_proxy = 0; // индекс текущего прокси-сервера из списка
-
     function __construct()
     {
         $this->curl = new Curl;
