@@ -20,7 +20,8 @@ $steps = count($proxies);
 echo $steps;
 */
 
-
+/*
 $data = $avito->parseAll($url2);
 echo '<pre>'; print_r($data); echo '<pre>';
 echo '<hr />';
+*/

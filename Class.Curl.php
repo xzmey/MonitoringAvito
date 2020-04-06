@@ -165,11 +165,10 @@ class Curl {
             if (strpos($this->header, 'Location: https://www.avito.ru/blocked'))
             {
                 $banned=true;
-
             }
 
             $step++;
-            // чтобы обойти бан
+            // чтобы обойти бан и невалидные прокси
             $try = ((($step < $steps) && ($http_code != 200))) || ($banned==true);
 
             if ($this->sleepMin > 0) {
