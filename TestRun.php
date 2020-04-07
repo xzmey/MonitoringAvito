@@ -7,7 +7,7 @@ $proxy = new Proxy;
 $avito = new Avito;
 
 $url='https://www.sslproxies.org/';
-$url2 ='https://www.avito.ru/izhevsk/kvartiry/prodam/1-komnatnye-ASgBAQICAUSSA8YQAUDKCBSAWQ?cd=1&district=163-166';
+$url2 ='https://www.avito.ru/izhevsk/avtomobili/opel-ASgBAgICAUTgtg3~mCg?radius=200';
 
 /*
 ($proxy -> parseProxy($url));
@@ -29,3 +29,5 @@ $data = $avito->parseAll($url2);
 echo '<pre>'; print_r($data); echo '<pre>';
 echo '<hr />';
 */
+
+
