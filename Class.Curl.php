@@ -41,6 +41,19 @@ class Curl {
         }
         return file_get_contents($fileName);
     }
+
+    function getFilePath($cacheId, $cashExpired=true)
+    {
+        $fileName = self::$cashDir.'/'.md5($cacheId);
+        if (!file_exists($fileName)) {
+            return false;
+        }
+        $time = time() - filemtime($fileName);
+        if ($time > $cashExpired) {
+            return false;
+        }
+        return $fileName;
+    }
     /**
      * curlLoad для проксей
      */
@@ -81,12 +94,9 @@ class Curl {
 
         $this->fromCash = false;
         $cacheId = $url;
-        if ($content = $this->getCache($cacheId, $cash)) {
-            //бан
-            if (!strpos($content, 'Location: https://www.avito.ru/blocked')) {
-                $this->fromCash = true;
+        if ($content = $this->getCache($cacheId, $cash))
+        {
                 return $content;
-            }
         }
         if (strpos($url, 'http') !== 0) {
             echo 'Неправильный урл запроса "'.$url.'"';
@@ -99,19 +109,31 @@ class Curl {
         while($try) {
             $proxy = isset($proxies[$step]) ? $proxies[$step] : null;
             $this->url = $url;
-            $banned = false;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
             curl_setopt($ch, CURLOPT_HEADER, 1);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
             curl_setopt($ch, CURLOPT_PROXY, $proxy);
-            echo $proxy;
+
+            //echo $proxy.PHP_EOL;
 
 
             $content = curl_exec($ch);
+
+            // для теста ,показывает ошибку курла
+            /*
+            if (curl_errno($ch))
+            {
+                    $error = curl_error($ch);
+                    echo '<p style="color:red">Curl error: '.$error.'</p>';
+            }
+            */
+
+
+
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Получаем HTTP-код
 
             $cookie = [
@@ -156,32 +178,32 @@ class Curl {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
 
-            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-            curl_close($ch);
 
-            $this->header = substr($content, 0, $headerSize);
-            $content = substr($content, $headerSize);
-
-            if (strpos($this->header, 'Location: https://www.avito.ru/blocked'))
+            if ($this->sleepMin > 0)
             {
-                $banned=true;
-            }
-
-            $step++;
-            // чтобы обойти бан и невалидные прокси
-            $try = ((($step < $steps) && ($http_code != 200))) || ($banned==true);
-
-            if ($this->sleepMin > 0) {
                 sleep(rand($this->sleepMin, $this->sleepMax));
             }
 
             $file = fopen('log.txt', 'a+');
             fwrite($file, "\n" . date('Y-m-d H:i:s') . ' ' . $url);
             fclose($file);
+            curl_close($ch);
 
-            if (strlen($content) > 1000) {
+            if (strlen($content) > 1000)
+            {
                 $this->setCache($content, $cacheId);
+                //echo 'Кол-во символов ('.strlen($content).')'.PHP_EOL;
+
             }
+            //echo $http_code.PHP_EOL;
+
+                $step++;
+                // чтобы обойти бан и невалидные прокси и 403 ответ серва при бане и капчу
+                // если код ответа не 200, длина контента < 100000, либо если 403 то контента вообще нет
+                // чтобы все работало пришлось в конфиге увеличить время на экзекут до 10 мин(600сек)
+
+                $try = (($step < $steps) && ($http_code != 200) && (strlen($content) < 100000) || (!$content));
+
         }
         return $content;
     }
