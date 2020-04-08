@@ -8,7 +8,7 @@ $avito = new Avito;
 
 $url='https://www.sslproxies.org/';
 //правильная ссылка!
-$url2 ='https://www.avito.ru/izhevsk/avtomobili?radius=200&q=audi';
+$url2 ='https://www.avito.ru/izhevsk/avtomobili?q=audi&radius=0';
 
 /*
 ($proxy -> parseProxy($url));

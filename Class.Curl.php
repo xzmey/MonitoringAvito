@@ -85,6 +85,7 @@ class Curl {
     /**
      * curlLoad для АВИТО
      */
+
     function load($url, $cash=0)
     {
         $proxies=file("proxy/GoodProxies.txt");
