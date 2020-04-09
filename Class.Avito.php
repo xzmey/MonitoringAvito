@@ -46,6 +46,11 @@ class Avito
             $row['name'] = $a[1];
             preg_match('~data-tooltip="(.*?)"~is', $rowContent, $a);
             $row['date'] = $a[1];
+            if (empty($row['date']))
+            {
+                preg_match('~data-tooltip="" flow="down">="(.*?)"~is', $rowContent, $a);
+                $row['date'] = $a[1];
+            }
             preg_match('~\d{4}~i', $row['name'], $a);
             $row['year'] = $a[0];
             preg_match('~ href="\s*([^"]+)"~i', $rowContent, $a);

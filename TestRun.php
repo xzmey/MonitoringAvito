@@ -8,7 +8,7 @@ $avito = new Avito;
 
 $url='https://www.sslproxies.org/';
 //правильная ссылка!
-$url2 ='https://www.avito.ru/izhevsk/avtomobili?q=audi&radius=0';
+$url2 ='https://www.avito.ru/izhevsk/gruzoviki_i_spetstehnika/avtodoma-ASgBAgICAURUkk8?cd=1&radius=300';
 
 /*
 ($proxy -> parseProxy($url));
@@ -23,8 +23,8 @@ echo $steps;
 */
 
 
-$avito->curl->sleepMin = 2;
-$avito->curl->sleepMax = 5;
+//$avito->curl->sleepMin = 3;
+//$avito->curl->sleepMax = 6;
 $data = $avito->parseAll($url2);
 
 echo '<pre>'; print_r($data); echo '<pre>';

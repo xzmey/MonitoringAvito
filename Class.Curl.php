@@ -42,16 +42,10 @@ class Curl {
         return file_get_contents($fileName);
     }
 
-    function getFilePath($cacheId, $cashExpired=true)
+    function getFilePath($cacheId, &$fileName='')
     {
         $fileName = self::$cashDir.'/'.md5($cacheId);
-        if (!file_exists($fileName)) {
-            return false;
-        }
-        $time = time() - filemtime($fileName);
-        if ($time > $cashExpired) {
-            return false;
-        }
+
         return $fileName;
     }
     /**
@@ -119,8 +113,6 @@ class Curl {
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
             curl_setopt($ch, CURLOPT_PROXY, $proxy);
 
-            //echo $proxy.PHP_EOL;
-
 
             $content = curl_exec($ch);
 
@@ -129,6 +121,7 @@ class Curl {
             if (curl_errno($ch))
             {
                     $error = curl_error($ch);
+                    $err = true;
                     echo '<p style="color:red">Curl error: '.$error.'</p>';
             }
             */
@@ -194,17 +187,16 @@ class Curl {
             {
                 $this->setCache($content, $cacheId);
                 //echo 'Кол-во символов ('.strlen($content).')'.PHP_EOL;
-
             }
-            //echo $http_code.PHP_EOL;
+                /*
+                echo 'Прокси ('.$proxy.')'.PHP_EOL;
+                echo 'Код ответа ('.$http_code.')'.PHP_EOL;
+                echo 'Объем символов ('.strlen($content).')'.PHP_EOL;
+                */
 
                 $step++;
-                // чтобы обойти бан и невалидные прокси и 403 ответ серва при бане и капчу
-                // если код ответа не 200, размер файла в кэше<900000 байт(900 кбайт), либо если 403 то контента вообще нет
-                // чтобы все работало пришлось в конфиге увеличить время на экзекут до 1 часа (3600сек)
-
-                // $try = (($step < $steps) && ($http_code != 200) && (strlen($content) < 800000) || (!$content));
-                $try = (($step < $steps) && ($http_code != 200) && (filesize($this->getFilePath($content, $cacheId))< 900000) || (!$content));
+                // обход бана и любого другого ответа серва, кроме 200, контент всегда большя 1 ляма, поэтому условие такое
+                $try = (($step < $steps) && ($http_code != 200) && (strlen($content) < 900000));
         }
         return $content;
     }
