@@ -10,8 +10,8 @@ class Proxy
         $this->curl = new Curl;
     }
 
-
-    function parseProxy($url)
+    //https://www.sslproxies.org/
+    function parseProxySSL($url)
     {
         $fileName = 'proxy/AllProxies.txt';
         $f = fopen($fileName, 'w+');
@@ -28,6 +28,40 @@ class Proxy
         }
         fclose($f);
         return $proxy_list;
+    }
+     //http://givemeproxy.com/
+    function parseProxyGMP($url)
+    {
+        $fileName = 'proxy/AllProxies.txt';
+        $f = fopen($fileName, 'a+');
+        // каждые 20 мин обновляем кэш
+        $content = $this->curl->proxyLoad($url, $cash = 1200);
+
+        //регулярка
+        preg_match_all('~<td class="column-1">.*?</td><td class="column-2">~is', $content, $a);
+        preg_match_all('~</td><td class="column-2">.*?</td><td class="column-3">~is', $content, $b);
+        //var_dump($a);
+        //var_dump($b);
+        //a[1]-ip,a[2]-port,в a[2]добавить в начало : чтобы было возможно отличить порт
+        //чтобы перед портом было :
+        foreach ($b[0] as $key => $value) {
+            $b[0][$key] = ':' . $value;
+            $proxy_list[] = $a[0][$key] . $b[0][$key];
+            file_put_contents($fileName, strip_tags($proxy_list[$key]) . PHP_EOL, FILE_APPEND);
+        }
+        fclose($f);
+        return $proxy_list;
+    }
+
+
+    function parseAllProxy()
+    {
+        $url1 = 'https://www.sslproxies.org/';
+        $url2 = 'http://givemeproxy.com/';
+
+        $proxylist = array_merge($this -> parseProxySSL($url1),$this -> parseProxyGMP($url2));
+
+        return $proxylist;
     }
 
     function proxyChecker($proxies)
