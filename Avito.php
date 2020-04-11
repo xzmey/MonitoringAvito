@@ -41,14 +41,14 @@ if ($_POST['action'] == 'parsePhone') {
     $url = $_POST['url'];
     preg_match('~_(\d+)$~i', $url, $a);
     $id = $a[1];
-    $cardContent = $avito->curl->load($url, 604800);
+    $cardContent = $avito->curl->phoneLoad($url, 604800);
     // Определяем phoneUrl
     $avitoContact = new AvitoContact;
     $phoneUrl = $avitoContact->getPhoneUrl($cardContent, $id);
     //var_dump($phoneUrl);
 
     // Грузим картинку по phoneUrl
-    $imgContent = $avito->curl->load($phoneUrl, 604800);
+    $imgContent = $avito->curl->phoneLoad($phoneUrl, 604800);
     // Контент дошел...
     // Разбираем ее и сохраняем в файл
     preg_match('~{(.*?)}~is',$imgContent, $jj);

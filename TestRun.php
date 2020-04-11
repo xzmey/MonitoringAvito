@@ -9,11 +9,11 @@ $avito = new Avito;
 //правильная ссылка!
 $url ='https://www.avito.ru/izhevsk/gruzoviki_i_spetstehnika/avtodoma-ASgBAgICAURUkk8?cd=1&radius=300';
 
-/*
+
 ($proxy -> parseAllProxy());
 $a=file("proxy/AllProxies.txt");
 ($proxy->proxyChecker($a));
-*/
+
 
 /*
 $proxies=file("proxy/GoodProxies.txt");
@@ -29,6 +29,7 @@ $data = $avito->parseAll($url);
 echo '<pre>'; print_r($data); echo '<pre>';
 echo '<hr />';
 */
+/*
 
 $a=file_get_contents('cash/5057ae166afef3e10dcdad5416900a53');
 preg_match('~<title>(.*?)</title>~is',$a, $b);
@@ -40,3 +41,6 @@ if ($b[1]==$c)
     echo 'Забанили';
 }
 else echo 'xz';
+*/
+
+
