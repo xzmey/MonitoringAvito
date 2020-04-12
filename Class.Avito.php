@@ -11,30 +11,31 @@ class Avito
 
     function parsePage($url)
     {
-       // поменял с 3600 чтобы тестить
+        // поменял с 3600 чтобы тестить
         $content = $this->curl->load($url, $cash = 604800);
         preg_match('~<div class="snippet-list js-catalog_serp".*?<div class="js-pages pagination-pagination-2j5na">~is', $content, $a);
         $innerContent = $a[0];
 
         $rows = preg_split($rx = '~<div class="snippet-horizontal~is', $innerContent);
 
-// если реклама снизу другая ,то и регулярка другая
+        // если реклама снизу другая ,то и регулярка другая
         if (count($rows) == 1) {
             preg_match('~<div class="js-catalog_serp".*?<div class="avito-ads-container avito-ads-container_context_12">~is', $content, $a);
             $innerContent = $a[0];
             $rows = preg_split($rx = '~<div class="snippet-horizontal item item_table~is', $innerContent);
-        } // если нет рекламы ,тогда цепляюсь к випкам
+        }
+        // если нет рекламы ,тогда цепляюсь к випкам
         elseif (count($rows) == 1) {
             preg_match('~<div class="js-catalog_serp".*?<div class="serp-vips ">~is', $content, $a);
             $innerContent = $a[0];
             $rows = preg_split($rx = '~<div class="snippet-horizontal item item_table~is', $innerContent);
-        } // если ниодна регулярка не подошла
+        }
+        // если ниодна регулярка не подошла
         elseif (count($rows) == 1) {
             throw new Exception('Ошибка регулярки "' . htmlspecialchars($rx) . '"');
         }
 
         array_shift($rows);
-
         $data = [];
 
         foreach ($rows as $key => $rowContent) {
@@ -52,6 +53,7 @@ class Avito
             $row['url'] = 'https://www.avito.ru' . $a[1];
             preg_match('~\n\s*>\n(.*?)<~is', $rowContent, $a);
             $row['price']= $a[1];
+
             Log::get()->log($row['name']);
 
             if ($this->loadCard) {
@@ -67,6 +69,7 @@ class Avito
     function parseAll($url)
         //$fromPage=1, $maxPage=false
     {
+
         $dataAll = [];
         $page = 1;
         $maxPage = false;
@@ -92,6 +95,7 @@ class Avito
                 break;
             }
             $dataAll = array_merge($dataAll, $data);
+
 
             if ($maxPage && $page == $maxPage) {
                 break;
@@ -129,8 +133,9 @@ class Avito
         preg_match_all('~data-url="(//\d+.img.avito.st/1280[^"]+jpg)"~i', $cardContent, $a);
         $row['images'] = $a[1];
 
-        preg_match_all('~<span class="item-params-label">(.*?)</span>(.*?)</span>~is', $cardContent, $a);
+        preg_match_all('~<span class="item-params-label">(.*?)</span>(.*?)</li>~is', $cardContent, $a);
         //параметры
+
         $row['params'] = [];
         foreach ($a[1] as $k => $name) {
             $row['params'][$name] = trim($a[2][$k]);

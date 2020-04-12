@@ -27,16 +27,56 @@ function GET($key, $default='')
 $proxy = new Proxy;
 $avito = new Avito;
 
-if ($_POST['action'] == 'parseCard') {
+if ($_POST['action'] == 'parseCard')
+{
     $avito->curl->sleepMin = 3;
     $avito->curl->sleepMax = 8;
     $avito->parseCard($_POST['url'], $row);
+    // описание
+    echo '<h3><strong>Описание объявления: </strong></h3>';
+    echo $row['text'];
+    echo '<h3><strong>Параметры: </strong></h3>';
+    // параметры
+    foreach ($row['params'] as $key => $name)
+    {
+        echo '<strong>'.$key.'</strong>'.$name.PHP_EOL.'<br/>';
+    }
+    // статистика
+    echo '<h3><strong>Статистика: </strong></h3>';
+    echo '<strong>Всего просмотров: </strong>'.$row['views-total'].'<br/>';
+    echo '<strong>Просмотров за сегодня: </strong>'.$row['views-today'];
+    // фото
+    echo '<h3><strong>Фото: </strong></h3>';
+    // скрипт для спойлера фото
 
-    echo '<pre>'; print_r($row); echo '</pre>';
+    ?>
+    <div class="spoiler_links blue">Спойлер (кликните для открытия/закрытия)</div>
+    <div class="spoiler_body">
+       <?php
+       foreach ($row['images'] as $key => $value)
+       {
+           echo '<img src="'.$value.'"width="300 px">';
+       }
+       ?>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.spoiler_links').click(function(){
+                $(this).next('.spoiler_body').toggle('normal');
+                return false;
+            });
+        });
+    </script>
+
+   <?php
+    /*
+    //echo '<pre>'; print_r($row); echo '</pre>';
+    */
     exit;
 }
 
-if ($_POST['action'] == 'parsePhone') {
+if ($_POST['action'] == 'parsePhone')
+{
 
     $avito->curl->sleepMin = 3;
     $avito->curl->sleepMax = 8;
@@ -97,7 +137,6 @@ if ($_POST['action'] == 'parsePhone') {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
 
-
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
@@ -129,6 +168,12 @@ if ($_POST['action'] == 'parsePhone') {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /*спойлер для фото*/
+        .spoiler_body { display: none; font-style: italic; }
+        .spoiler_links { cursor: pointer; font-weight: bold; text-decoration: underline; }
+        .blue { color: #000099; }
+        .green { color: #009900; }
+
     </style>
 </head>
 <body>
@@ -138,7 +183,8 @@ if ($_POST['action'] == 'parsePhone') {
 <div class ="container-fluid">
 
 
-    <h1>Заполните форму URL</h1>
+    <h1>Заполните форму URL <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></h1>
+
 
     <form class="form-inline avito-form" method="post">
         <div class="form-group input-group">
@@ -153,12 +199,19 @@ if ($_POST['action'] == 'parsePhone') {
 
 
 <?php
-//$url ='https://www.avito.ru/izhevsk/gruzoviki_i_spetstehnika/avtodoma-ASgBAgICAURUkk8?cd=1&radius=300';
-if ($_POST['url'])
-{
-$avito->curl->sleepMin = 4;
-$avito->curl->sleepMax = 9;
-$data = $avito->parseAll($_POST['url']);
+    if ($_POST['url'])
+    {
+        $avito->curl->sleepMin = 4;
+        $avito->curl->sleepMax = 9;
+        $data = $avito->parseAll($_POST['url']);
+        //кол-во объявлений
+        $count = count($data);
+    if (isset($count))
+    {
+        echo '<strong>Всего объявлений: </strong>'.$count;
+    }
+        //вывод новых объявлений
+        //$news=
 ?>
     <hr/>
     <div class="row">
@@ -178,7 +231,7 @@ $data = $avito->parseAll($_POST['url']);
                 ?>
                 <tr>
                     <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
-                    <td class="text-right"><?= ($row['price']) ?></td>
+                    <td class="text-right"><?= substr($row['price'],0,-6) ?></td>
                     <td><?= $row['year'] ?></td>
                     <td><?= date($row['date']) ?></td>
                     <td>
@@ -224,6 +277,7 @@ $data = $avito->parseAll($_POST['url']);
     <hr />
 
     <?php
+
     echo $avitoContact->debugOutput;
 
     if ($_POST['columnTo']) {
