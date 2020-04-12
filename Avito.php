@@ -28,7 +28,8 @@ $proxy = new Proxy;
 $avito = new Avito;
 
 if ($_POST['action'] == 'parseCard') {
-
+    $avito->curl->sleepMin = 3;
+    $avito->curl->sleepMax = 8;
     $avito->parseCard($_POST['url'], $row);
 
     echo '<pre>'; print_r($row); echo '</pre>';
@@ -36,6 +37,9 @@ if ($_POST['action'] == 'parseCard') {
 }
 
 if ($_POST['action'] == 'parsePhone') {
+
+    $avito->curl->sleepMin = 3;
+    $avito->curl->sleepMax = 8;
 
     // Подготавливаем входные параметры
     $url = $_POST['url'];
@@ -144,7 +148,6 @@ if ($_POST['action'] == 'parsePhone') {
         </div>
     </form>
 
-
 <hr/>
 
 
@@ -153,8 +156,8 @@ if ($_POST['action'] == 'parsePhone') {
 //$url ='https://www.avito.ru/izhevsk/gruzoviki_i_spetstehnika/avtodoma-ASgBAgICAURUkk8?cd=1&radius=300';
 if ($_POST['url'])
 {
-$avito->curl->sleepMin = 3;
-$avito->curl->sleepMax = 6;
+$avito->curl->sleepMin = 4;
+$avito->curl->sleepMax = 9;
 $data = $avito->parseAll($_POST['url']);
 ?>
     <hr/>

@@ -7,13 +7,13 @@ $proxy = new Proxy;
 $avito = new Avito;
 
 //правильная ссылка!
-$url ='https://www.avito.ru/izhevsk/gruzoviki_i_spetstehnika/avtodoma-ASgBAgICAURUkk8?cd=1&radius=300';
+$url ='https://www.avito.ru/izhevsk/avtomobili/honda/accord-ASgBAgICAkTgtg2ymCjitg30nSg?radius=300';
 
-
+/*
 ($proxy -> parseAllProxy());
 $a=file("proxy/AllProxies.txt");
 ($proxy->proxyChecker($a));
-
+*/
 
 /*
 $proxies=file("proxy/GoodProxies.txt");
@@ -44,3 +44,4 @@ else echo 'xz';
 */
 
 
+//echo (strlen(file_get_contents('cash/4dd511879408a1d06f33fa4d6b184e19')));

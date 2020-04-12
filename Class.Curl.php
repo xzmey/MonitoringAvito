@@ -169,11 +169,11 @@ class Curl {
                 'user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'.rand(60,72).'.0.'.rand(1000,9999).'.121 Safari/537.36'
             );
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            /*
             $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-
             $this->header = substr($content, 0, $headerSize);
             $content = substr($content, $headerSize);
-
+             */
             if ($this->sleepMin > 0)
             {
                 sleep(rand($this->sleepMin, $this->sleepMax));
@@ -203,8 +203,9 @@ class Curl {
                 exit;
             }
                 //(strlen($content) < 900000)
-                // обход бана и любого другого ответа серва, кроме 200, контент всегда большя 1 ляма, поэтому условие такое
-                $try = ((($step < $steps) && ($http_code != 200)) || (strlen($content) < 900000));
+                // обход бана и любого другого ответа серва, кроме 200, контента в 1 объявлении чуть больше 100к символов, на всей странице
+                // около 1 ляма символов, потому функция подходит для парсинга статы и всей страницы
+                $try = ((($step < $steps) && ($http_code != 200)) || (strlen($content) < 100000));
         }
         return $content;
     }
@@ -246,15 +247,6 @@ class Curl {
 
             $content = curl_exec($ch);
 
-            // для теста ,показывает ошибку курла
-            /*
-            if (curl_errno($ch))
-            {
-                    $error = curl_error($ch);
-                    $err = true;
-                    echo '<p style="color:red">Curl error: '.$error.'</p>';
-            }
-            */
 
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Получаем HTTP-код
 
@@ -298,10 +290,12 @@ class Curl {
                 'user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'.rand(60,72).'.0.'.rand(1000,9999).'.121 Safari/537.36'
             );
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
 
+            /*
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
             $this->header = substr($content, 0, $headerSize);
             $content = substr($content, $headerSize);
+            */
 
             if ($this->sleepMin > 0)
             {
@@ -319,10 +313,11 @@ class Curl {
                 //echo 'Кол-во символов ('.strlen($content).')'.PHP_EOL;
             }
 
+            /*
             echo 'Прокси ('.$proxy.')'.PHP_EOL;
             echo 'Код ответа ('.$http_code.')'.PHP_EOL;
             echo 'Объем символов ('.strlen($content).')'.PHP_EOL;
-
+            */
 
             $step++;
 
