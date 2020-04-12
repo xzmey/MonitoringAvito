@@ -208,7 +208,7 @@ if ($_POST['action'] == 'parsePhone')
         $count = count($data);
     if (isset($count))
     {
-        echo '<strong>Всего объявлений: </strong>'.$count;
+        echo '<h4><strong>Всего объявлений: '.$count.'</strong></h4>';
     }
         //вывод новых объявлений
         //$news=
