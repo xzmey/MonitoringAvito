@@ -23,8 +23,6 @@ function GET($key, $default='')
     }
 }
 
-
-$proxy = new Proxy;
 $avito = new Avito;
 
 if ($_POST['action'] == 'parseCard')
@@ -172,7 +170,6 @@ if ($_POST['action'] == 'parsePhone')
         .spoiler_body { display: none; font-style: italic; }
         .spoiler_links { cursor: pointer; font-weight: bold; text-decoration: underline; }
         .blue { color: #000099; }
-        .green { color: #009900; }
 
     </style>
 </head>
@@ -303,9 +300,9 @@ if ($_POST['action'] == 'parsePhone')
 } else {
     ?>
     <br />
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="jumbotron">
+        <div class="wrap">
+        <div class="col-sm-12" >
+            <div class="jumbotron" >
             <h1>Привет!</h1>
             <p>Перейти на Авито</p>
             <p><a class="btn btn-primary btn-lg" href="https://www.avito.ru/" role="button">Начать поиск объявлений</a></p>
