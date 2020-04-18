@@ -9,6 +9,8 @@ $avito = new Avito;
 //правильная ссылка!
 $url ='https://www.avito.ru/izhevsk/avtomobili/honda/accord-ASgBAgICAkTgtg2ymCjitg30nSg?radius=300';
 
+//url2   https://www.avito.ru/izhevsk/kvartiry/prodam/1-komnatnye-ASgBAQICAUSSA8YQAUDKCBSAWQ?district=166
+
 /*
 ($proxy -> parseAllProxy());
 $a=file("proxy/AllProxies.txt");

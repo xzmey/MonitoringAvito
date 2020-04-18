@@ -1,9 +1,10 @@
 <?php
 
 
-
 class Avito
 {
+
+
     function __construct()
     {
         $this->curl = new Curl;
@@ -118,12 +119,8 @@ class Avito
         {
             $statValues = $a[0];
 
-            if (preg_match('~(\d+)\s+\(\+(\d+)\)~i', $statValues, $b)) {
-                $row['views-total'] = intval($b[1]);
-                $row['views-today'] = intval($b[2]);
-            } else {
-                $row['views-total'] = intval($statValues);
-            }
+            $row['views-total'] = ($statValues);
+
         }
 
 

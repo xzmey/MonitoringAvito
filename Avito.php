@@ -1,8 +1,16 @@
 <?php
-
+/*
 spl_autoload_register(function ($class_name) {
     include 'Class.'.$class_name.'.php';
 });
+*/
+include 'Class.Avito.php';
+include 'Class.AvitoContact.php';
+include 'Class.Curl.php';
+include 'Class.Log.php';
+include 'Class.Proxy.php';
+require $_SERVER['DOCUMENT_ROOT'].'/db.php';
+
 
 
 function POST($key, $default='')
@@ -42,7 +50,7 @@ if ($_POST['action'] == 'parseCard')
     // статистика
     echo '<h3><strong>Статистика: </strong></h3>';
     echo '<strong>Всего просмотров: </strong>'.$row['views-total'].'<br/>';
-    echo '<strong>Просмотров за сегодня: </strong>'.$row['views-today'];
+    //echo '<strong>Просмотров за сегодня: </strong>'.$row['views-today'];
     // фото
     echo '<h3><strong>Фото: </strong></h3>';
     // скрипт для спойлера фото
@@ -140,7 +148,9 @@ if ($_POST['action'] == 'parsePhone')
     <![endif]-->
 
     <style type="text/css">
-        body {
+
+        body
+        {
             background-repeat: no-repeat;
             background-position: 0 0;
             background-size: cover;
@@ -150,8 +160,11 @@ if ($_POST['action'] == 'parsePhone')
         h1 {margin:20px 0 15px; font-size:24px;}
         .avito-form > div {margin-right:10px;}
         .form-inline .form-group {margin-bottom:10px;}
+
+
         /* лоадер на css */
-        #loader {
+        #loader
+        {
             border: 5px solid #f3f3f3; /* Light grey */
             border-top: 5px solid #3498db; /* Blue */
             border-radius: 50%;
@@ -162,14 +175,49 @@ if ($_POST['action'] == 'parsePhone')
             top:7px; left:10px;
             display:none;
         }
-        @keyframes spin {
+        /*анимация новых объявлений*/
+        .area
+        {
+            font-size: 2.5em;
+            color: #00a86b;
+            letter-spacing: -7px;
+            font-weight: 400;
+            text-transform: uppercase;
+            animation: blur .75s ease-out infinite;
+            text-shadow: 0px 0px 5px #fff, 0px 0px 7px #fff;
+        }
+
+        @keyframes blur {
+            from {
+                text-shadow: 0px 0px 10px #fff,
+                0px 0px 10px #fff,
+                0px 0px 25px #fff,
+                0px 0px 25px #fff,
+                0px 0px 25px #fff,
+                0px 0px 25px #fff,
+                0px 0px 25px #fff,
+                0px 0px 25px #fff,
+                0px 0px 50px #fff,
+                0px 0px 50px #fff,
+                0px 0px 50px #7B96B8,
+                0px 0px 150px #7B96B8,
+                0px 10px 100px #7B96B8,
+                0px 10px 100px #7B96B8,
+                0px 10px 100px #7B96B8,
+                0px 10px 100px #7B96B8,
+                0px -10px 100px #7B96B8,
+                0px -10px 100px #7B96B8;
+            }
+        }
+        @keyframes spin
+        {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         /*спойлер для фото*/
         .spoiler_body { display: none; font-style: italic; }
         .spoiler_links { cursor: pointer; font-weight: bold; text-decoration: underline; }
-        .blue { color: #000099; }
+        .blue { color: #006699; }
 
     </style>
 </head>
@@ -180,7 +228,7 @@ if ($_POST['action'] == 'parsePhone')
 <div class ="container-fluid">
 
 
-    <h1>Заполните форму URL <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></h1>
+    <h1><strong>Заполните форму URL <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></strong></h1>
 
 
     <form class="form-inline avito-form" method="post">
@@ -203,12 +251,50 @@ if ($_POST['action'] == 'parsePhone')
         $data = $avito->parseAll($_POST['url']);
         //кол-во объявлений
         $count = count($data);
-    if (isset($count))
+        //кол-во новых
+
+        // запись в бд объявлений
+        // если такого объявления нет в бд, то записывает его и ставим статус new
+
+    $newCount=0; // счетчик новых объявлений
+
+    foreach ($data as $key=>$value)
     {
-        echo '<h4><strong>Всего объявлений: '.$count.'</strong></h4>';
+        if (!(R::findOne('ads','url_ad=?',array( $data[$key]['url']))))
+        {
+            $newUrl = R::dispense('ads');
+            $newUrl->url_request = $_POST['url'];//url запроса
+            $newUrl->url_ad = $data[$key]['url'];//url объявления
+            $newUrl->status = 'new';
+            R::store($newUrl);
+            $newCount++;
+        }
+        else
+        {
+            //если уже было , то обновляем статус на old
+            $urlAd = $data[$key]['url'];
+            $select= 'SELECT `id` FROM  ads where `url_ad`= $urlAd';
+            $link = mysqli_connect ("localhost","mysql","mysql","avito");
+            $sql = mysqli_query($link, "UPDATE `ads` SET `status` = 'new', `status` = 'old'") or die;
+        }
     }
-        //вывод новых объявлений
-        //$news=
+    // если есть новые объявления анимирует текст и выведет кол-во
+    if ($newCount>0)
+    {
+        echo '<h3><strong>Всего объявлений: '.$count.'
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Новых объявлений:<a class="area">'.$newCount.'</a></strong></h3>';
+
+    }
+    else
+    // просто выведет кол-во объявлений
+    {
+        echo '<h2><strong>Всего объявлений: '.$count.'</strong></h2>';
+    }
+
 ?>
     <hr/>
     <div class="row">
@@ -356,6 +442,9 @@ if ($_POST['action'] == 'parsePhone')
         })
     });
 </script>
+
+
+
 
 </body>
 </html>
