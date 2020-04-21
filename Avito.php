@@ -260,23 +260,34 @@ if ($_POST['action'] == 'parsePhone')
 
     foreach ($data as $key=>$value)
     {
-        if (!(R::findOne('ads','url_ad=?',array( $data[$key]['url']))))
-        {
-            $newUrl = R::dispense('ads');
-            $newUrl->url_request = $_POST['url'];//url запроса
-            $newUrl->url_ad = $data[$key]['url'];//url объявления
-            $newUrl->status = 'new';
-            R::store($newUrl);
-            $newCount++;
-        }
-        else
-        {
-            //если уже было , то обновляем статус на old
-            $urlAd = $data[$key]['url'];
-            $select= 'SELECT `id` FROM  ads where `url_ad`= $urlAd';
-            $link = mysqli_connect ("localhost","mysql","mysql","avito");
-            $sql = mysqli_query($link, "UPDATE `ads` SET `status` = 'new', `status` = 'old'") or die;
-        }
+
+        $urlAd = $data[$key]['url'];
+        $link = mysqli_connect ("localhost","mysql","mysql","avito");
+        $sql = mysqli_query($link, "SELECT `status` FROM `ads` WHERE `url_ad` = '$urlAd'");
+        $row = mysqli_fetch_array($sql); // результат ячейки статуса (new/old) по url_ad
+        //echo($row['status']);
+
+            if (!(R::findOne('ads','url_ad=?',array( $urlAd))))
+            {
+                $newUrl = R::dispense('ads');
+                $newUrl->url_request = $_POST['url'];//url запроса
+                $newUrl->url_ad = $urlAd;//url объявления
+                $newUrl->status = 'new';
+                R::store($newUrl);
+                $newCount++;
+            }
+            if  ((R::findOne('ads','url_ad=?',array( $urlAd))) && ($row['status'] == 'new'))
+            {
+                //если уже было , то обновляем статус на old
+                $sql = mysqli_query($link, "UPDATE `ads` SET  `status` = 'old' WHERE `url_ad` = '$urlAd'") or die;
+            }
+            if  ((R::findOne('ads','url_ad=?',array( $urlAd))) && ($row['status'] == 'old'))
+            {
+                //если old, то пропускаем и не меняем
+                continue;
+            }
+
+
     }
     // если есть новые объявления анимирует текст и выведет кол-во
     if ($newCount>0)
