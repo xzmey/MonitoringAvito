@@ -10,8 +10,9 @@ include 'Class.Curl.php';
 include 'Class.Log.php';
 include 'Class.Proxy.php';
 require $_SERVER['DOCUMENT_ROOT'].'/db.php';
+error_reporting(0); // отключаем вывод ошибки
 
-
+//$token = "4dec5adac64862cecd0ebf2cef7e2aa01bb1e86b42abf2df5731c299d7d1204b80173798e8458dc7243b1"; //токен
 
 function POST($key, $default='')
 {
@@ -39,7 +40,7 @@ if ($_POST['action'] == 'parseCard')
     $avito->curl->sleepMax = 8;
     $avito->parseCard($_POST['url'], $row);
     // описание
-    echo '<h3><strong>Описание объявления: </strong></h3>';
+    echo '<hr/><h3><strong>Описание объявления: </strong></h3>';
     echo $row['text'];
     echo '<h3><strong>Параметры: </strong></h3>';
     // параметры
@@ -125,8 +126,6 @@ if ($_POST['action'] == 'parsePhone')
     }
     exit;
 }
-
-
 ?>
 
 
@@ -251,12 +250,11 @@ if ($_POST['action'] == 'parsePhone')
         $data = $avito->parseAll($_POST['url']);
         //кол-во объявлений
         $count = count($data);
-        //кол-во новых
 
         // запись в бд объявлений
         // если такого объявления нет в бд, то записывает его и ставим статус new
 
-    $newCount=0; // счетчик новых объявлений
+        $newCount=0; // счетчик новых объявлений
 
     foreach ($data as $key=>$value)
     {
@@ -269,6 +267,7 @@ if ($_POST['action'] == 'parsePhone')
 
             if (!(R::findOne('ads','url_ad=?',array( $urlAd))))
             {
+                // если не нашел совпадений по url объявления, то добавляем в бд и стату новый
                 $newUrl = R::dispense('ads');
                 $newUrl->url_request = $_POST['url'];//url запроса
                 $newUrl->url_ad = $urlAd;//url объявления

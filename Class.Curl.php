@@ -83,7 +83,7 @@ class Curl {
     function load($url, $cash=0)
     {
         $proxies=file("proxy/GoodProxies.txt");
-        $steps = count($proxies);
+        $steps = count($proxies)+1; // на 1 больше тк step+1 = steps -> значит дошли до конца и стопаем цикл
         $step = 0;
         $try = true;
 
@@ -94,7 +94,8 @@ class Curl {
         {
                 return $content;
         }
-        if (strpos($url, 'http') !== 0) {
+        if (strpos($url, 'http') !== 0)
+        {
             echo 'Неправильный урл запроса "'.$url.'"';
             return false;
         }
@@ -106,6 +107,7 @@ class Curl {
             $proxy = isset($proxies[$step]) ? $proxies[$step] : null;
             $this->url = $url;
             $ch = curl_init();
+            $proxyauth = 'user42429:gmvbh9';
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -113,7 +115,8 @@ class Curl {
             curl_setopt($ch, CURLOPT_HEADER, 1);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
             curl_setopt($ch, CURLOPT_PROXY, $proxy);
-
+            // авторизация для прокси
+            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxyauth);
 
             $content = curl_exec($ch);
 
@@ -169,6 +172,7 @@ class Curl {
                 'user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'.rand(60,72).'.0.'.rand(1000,9999).'.121 Safari/537.36'
             );
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
             /*
             $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
             $this->header = substr($content, 0, $headerSize);
@@ -184,6 +188,7 @@ class Curl {
             fclose($file);
             curl_close($ch);
 
+
             if (strlen($content) > 1000)
             {
                 $this->setCache($content, $cacheId);
@@ -196,16 +201,17 @@ class Curl {
                 */
 
                 $step++;
-
-            if ($step==$steps)
-            {
-                echo '<h2 class="text-danger">Прокси закончились</h2>';
-                exit;
-            }
-                //(strlen($content) < 900000)
+                //echo (strlen($content));
                 // обход бана и любого другого ответа серва, кроме 200, контента в 1 объявлении чуть больше 100к символов, на всей странице
                 // около 1 ляма символов, потому функция подходит для парсинга статы и всей страницы
                 $try = ((($step < $steps) && ($http_code != 200)) || (strlen($content) < 100000));
+                // если дошли до конца то прокси кончились
+                if ($step==$steps)
+                {
+                echo '<h2 class="text-danger">Прокси закончились</h2>';
+                exit;
+                }
+
         }
         return $content;
     }
@@ -213,10 +219,10 @@ class Curl {
     function phoneLoad($url, $cash=0)
     {
         $proxies=file("proxy/GoodProxies.txt");
-        $steps = count($proxies);
+        $steps = count($proxies)+1;
         $step = 0;
         $try = true;
-
+        $proxyauth = 'user42429:gmvbh9';
 
         $this->fromCash = false;
         $cacheId = $url;
@@ -237,13 +243,14 @@ class Curl {
             $this->url = $url;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
             curl_setopt($ch, CURLOPT_HEADER, 1);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
             curl_setopt($ch, CURLOPT_PROXY, $proxy);
-
+            // авторизация для прокси
+            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxyauth);
 
             $content = curl_exec($ch);
 
@@ -318,16 +325,14 @@ class Curl {
             echo 'Код ответа ('.$http_code.')'.PHP_EOL;
             echo 'Объем символов ('.strlen($content).')'.PHP_EOL;
             */
-
             $step++;
-
+            //в 1 объявлении больше 3к символов должно быть, там в районе 8-9к может быть и меньше
+            $try = ((($step < $steps) && ($http_code != 200)) || (strlen($content) < 3000));
             if ($step==$steps)
             {
                 echo '<h2 class="text-danger">Прокси закончились</h2>';
                 exit;
             }
-            //в 1 объявлении больше 3к символов должно быть, там в районе 8-9к может быть и меньше
-            $try = ((($step < $steps) && ($http_code != 200)) || (strlen($content) < 3000));
         }
         return $content;
     }

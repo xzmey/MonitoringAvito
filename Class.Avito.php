@@ -13,9 +13,16 @@ class Avito
     function parsePage($url)
     {
         // поменял с 3600 чтобы тестить
-        $content = $this->curl->load($url, $cash = 604800);
+        $content = $this->curl->load($url, $cash = 1209600);
+
         preg_match('~<div class="snippet-list js-catalog_serp".*?<div class="js-pages pagination-pagination-2j5na">~is', $content, $a);
         $innerContent = $a[0];
+        if ($innerContent == null)
+        {
+            preg_match('~<div class="snippet-list js-catalog_serp".*?<div class="index-center-2ZEUx">~is', $content, $a);
+            $innerContent = $a[0];
+        }
+
 
         $rows = preg_split($rx = '~<div class="snippet-horizontal~is', $innerContent);
 
@@ -70,45 +77,61 @@ class Avito
     function parseAll($url)
         //$fromPage=1, $maxPage=false
     {
+        $content = $this->curl->load($url, $cash = 1209600);
+        preg_match('~<div class="snippet-list js-catalog_serp".*?<div class="js-pages pagination-pagination-2j5na">~is', $content, $a);
+        $innerContent = $a[0];
 
-        $dataAll = [];
-        $page = 1;
-        $maxPage = false;
-        while (true) {
+        //у url не больше 5 страниц, так как возможен бан(и какой смысл мониторить если и так много вариантов)
+        $pagination = preg_split($pg = '~<span data-marker="page~is',$content);
+        if (count($pagination) < 6)
+        {
+            // если есть пагинации на странице
+            if (isset($innerContent)) {
+                $dataAll = [];
+                $page = 1;
+                $maxPage = false;
+                while (true) {   // если страницы больше 5, то скипаем
 
-            if ($page == 1) {
-                $urlCurrent = $url;
-            } else {
-                if (strpos($url, '?')) {
-                    $urlCurrent = str_replace('?', '?p=' . $page . '&', $url);
-                } else {
-                    $urlCurrent = $url . '?=' . $page;
+
+                    if ($page == 1) {
+                        $urlCurrent = $url;
+                    } else {
+                        if (strpos($url, '?')) {
+                            $urlCurrent = str_replace('?', '?p=' . $page . '&', $url);
+                        } else {
+                            $urlCurrent = $url . '?=' . $page;
+                        }
+                    }
+
+                    //echo '<br />'.$urlCurrent;
+
+                    $data = $this->parsePage($urlCurrent);
+
+                    //var_dump(count($data));
+
+                    if (!count($data)) {
+                        break;
+                    }
+                    $dataAll = array_merge($dataAll, $data);
+
+                    if ($maxPage && $page == $maxPage) {
+                        break;
+                    }
+                    $page++;
                 }
+                return $dataAll;
+            } // если нет пагинации на странице
+            else {
+                $urlCurrent = $url;
+                $data = $this->parsePage($urlCurrent);
             }
-
-            //echo '<br />'.$urlCurrent;
-
-            $data =  $this->parsePage($urlCurrent);
-
-            //var_dump(count($data));
-
-            if (!count($data)) {
-                break;
-            }
-            $dataAll = array_merge($dataAll, $data);
-
-
-            if ($maxPage && $page == $maxPage) {
-                break;
-            }
-            $page++;
+            return $data;
         }
-        return $dataAll;
     }
 
     function parseCard($url, &$row)
     {
-        $cardContent = $this->curl->load($url, 604800);
+        $cardContent = $this->curl->load($url, 1209600);
         Log::get()->log(' card['.strlen($cardContent).']', 0);
 
         //var_dump(strlen($cardContent));
