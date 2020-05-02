@@ -12,7 +12,6 @@ include 'Class.Proxy.php';
 require $_SERVER['DOCUMENT_ROOT'].'/db.php';
 error_reporting(0); // отключаем вывод ошибки
 
-//$token = "4dec5adac64862cecd0ebf2cef7e2aa01bb1e86b42abf2df5731c299d7d1204b80173798e8458dc7243b1"; //токен
 
 function POST($key, $default='')
 {
@@ -34,8 +33,20 @@ function GET($key, $default='')
 
 $avito = new Avito;
 
-if ($_POST['action'] == 'parseCard')
+
+session_start();
+if(!$_SESSION['login'])
 {
+    header('location:/auth.php'); //переадресация на страницу входа
+    exit();
+}
+// если не нашли в бд, то офаем
+
+if  (R::findOne('users', 'user_id = ?', array($_SESSION['login']['id'])))
+{
+
+
+if ($_POST['action'] == 'parseCard') {
     $avito->curl->sleepMin = 3;
     $avito->curl->sleepMax = 8;
     $avito->parseCard($_POST['url'], $row);
@@ -46,11 +57,11 @@ if ($_POST['action'] == 'parseCard')
     // параметры
     foreach ($row['params'] as $key => $name)
     {
-        echo '<strong>'.$key.'</strong>'.$name.PHP_EOL.'<br/>';
+        echo '<strong>' . $key . '</strong>' . $name . PHP_EOL . '<br/>';
     }
     // статистика
     echo '<h3><strong>Статистика: </strong></h3>';
-    echo '<strong>Всего просмотров: </strong>'.$row['views-total'].'<br/>';
+    echo '<strong>Всего просмотров: </strong>' . $row['views-total'] . '<br/>';
     //echo '<strong>Просмотров за сегодня: </strong>'.$row['views-today'];
     // фото
     echo '<h3><strong>Фото: </strong></h3>';
@@ -59,31 +70,38 @@ if ($_POST['action'] == 'parseCard')
     ?>
     <div class="spoiler_links blue">Спойлер (кликните для открытия/закрытия)</div>
     <div class="spoiler_body">
-       <?php
-       foreach ($row['images'] as $key => $value)
-       {
-           echo '<img src="'.$value.'"width="300 px">';
-       }
-       ?>
+        <?php
+        foreach ($row['images'] as $key => $value) {
+            echo '<img src="' . $value . '"width="300 px">';
+        }
+        ?>
     </div>
     <script type="text/javascript">
-        $(document).ready(function(){
-            $('.spoiler_links').click(function(){
+        $(document).ready(function () {
+            $('.spoiler_links').click(function () {
                 $(this).next('.spoiler_body').toggle('normal');
                 return false;
             });
         });
     </script>
 
-   <?php
+    <?php
     /*
     //echo '<pre>'; print_r($row); echo '</pre>';
     */
     exit;
 }
 
-if ($_POST['action'] == 'parsePhone')
-{
+
+
+$photo = $_SESSION['login']['ph'];
+echo $photo;
+?>
+<img src="<?
+$photo ?>" align="right" alt="Avatar" class="avatar">
+<?php
+
+if ($_POST['action'] == 'parsePhone') {
 
     $avito->curl->sleepMin = 3;
     $avito->curl->sleepMax = 8;
@@ -102,7 +120,7 @@ if ($_POST['action'] == 'parsePhone')
     $imgContent = $avito->curl->phoneLoad($phoneUrl, 604800);
     // Контент дошел...
     // Разбираем ее и сохраняем в файл
-    preg_match('~{(.*?)}~is',$imgContent, $jj);
+    preg_match('~{(.*?)}~is', $imgContent, $jj);
 
     $img = json_decode($jj[0]);
 
@@ -117,15 +135,16 @@ if ($_POST['action'] == 'parsePhone')
     //echo '<p><img src="'.$img->image64.'" alt="" /></p>';
 
     //echo '<p><a href="#" onclick="jQuery(\'#debugOutput\').slideToggle(); return false;">Цветовая схема</a></p>';
-    echo '<div id="debugOutput" style="display:none;">'.$avitoContact->debugOutput.'</div>';
+    echo '<div id="debugOutput" style="display:none;">' . $avitoContact->debugOutput . '</div>';
 
     if ($result) {
-        echo '<h2 class="text-success">Телефон: '.$result.'</h2>';
+        echo '<h2 class="text-success">Телефон: ' . $result . '</h2>';
     } else {
         echo '<h2 class="text-danger">Ничего не получилось</h2>';
     }
     exit;
 }
+
 ?>
 
 
@@ -138,8 +157,10 @@ if ($_POST['action'] == 'parsePhone')
 
     <title>Парсер объявлений Авито</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
 
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -156,10 +177,30 @@ if ($_POST['action'] == 'parsePhone')
             background-image: url(images/avitus5.jpg);
             background-blend-mode: normal;
         }
-        h1 {margin:20px 0 15px; font-size:24px;}
-        .avito-form > div {margin-right:10px;}
-        .form-inline .form-group {margin-bottom:10px;}
 
+        h1
+        {
+            margin: 20px 0 15px;
+            font-size: 24px;
+        }
+
+        .avito-form > div
+        {
+            margin-right: 10px;
+        }
+
+        .form-inline .form-group
+        {
+            margin-bottom: 10px;
+        }
+
+        /*аватар юзера*/
+        .avatar {
+            margin: 20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+        }
 
         /* лоадер на css */
         #loader
@@ -170,13 +211,14 @@ if ($_POST['action'] == 'parsePhone')
             width: 52px;
             height: 52px;
             animation: spin 2s linear infinite;
-            position:absolute;
-            top:7px; left:10px;
-            display:none;
+            position: absolute;
+            top: 7px;
+            left: 10px;
+            display: none;
         }
+
         /*анимация новых объявлений*/
-        .area
-        {
+        .area {
             font-size: 2.5em;
             color: #00a86b;
             letter-spacing: -7px;
@@ -208,15 +250,49 @@ if ($_POST['action'] == 'parsePhone')
                 0px -10px 100px #7B96B8;
             }
         }
-        @keyframes spin
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        /*тэг для изменения междустрочечного расстояния*/
+        p
         {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            line-height: 1.5;
         }
         /*спойлер для фото*/
-        .spoiler_body { display: none; font-style: italic; }
-        .spoiler_links { cursor: pointer; font-weight: bold; text-decoration: underline; }
-        .blue { color: #006699; }
+        .spoiler_body
+        {
+            display: none;
+            font-style: italic;
+        }
+
+        .spoiler_links
+        {
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .blue
+        {
+            color: #006699;
+        }
+
+        select
+        {
+            width: 450px; /* Ширина списка в пикселах */
+            height: 30px;
+        }
+        button
+        {
+            text-align: center;
+            height: 35px;
+        }
 
     </style>
 </head>
@@ -224,27 +300,41 @@ if ($_POST['action'] == 'parsePhone')
 
 <div id="loader"></div>
 
-<div class ="container-fluid">
+
+<div class="container-fluid">
 
 
-    <h1><strong>Заполните форму URL <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></strong></h1>
+    <h1><strong>Выберите ваш url <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></strong></h1>
 
+<?php
+// выводим url для юзера из бд
+$sessionId = $_SESSION['login']['id'];
+$selectLink = mysqli_connect ("localhost","mysql","mysql","avito");
+$sqlSelectUrl = mysqli_query($selectLink, "SELECT `url_request` FROM `requests` WHERE `user_id` = '$sessionId'") or die;
+?>
 
     <form class="form-inline avito-form" method="post">
-        <div class="form-group input-group">
-            <span class="input-group-addon"><a href="<?=$_POST['url']?>" target="_blank">URL</a></span>
-            <input type="text" class="form-control" name ="url" value ="<?=$_POST['url']?>" style="width: 400px;">
-            <button type="submit" class="btn btn-default">Выполнить</button>
-        </div>
+    <div class="form-group input-group">
+
+<?php
+echo "<select name=\"url\">";
+while($rowUrl = mysqli_fetch_array($sqlSelectUrl))
+{
+    echo "<option>".$rowUrl['url_request']."</option>";
+}
+echo "</select>";
+
+?>
+    <span class="input-group-addon"><a href="<?= $_POST['url'] ?>" target="_blank">URL</a></span>
+    <button type="submit" class="btn btn-default">Выполнить</button>
+    </div>
     </form>
-
-<hr/>
-
+    <hr/>
 
 
 <?php
-    if ($_POST['url'])
-    {
+
+    if ($_POST['url']) {
         $avito->curl->sleepMin = 4;
         $avito->curl->sleepMax = 9;
         $data = $avito->parseAll($_POST['url']);
@@ -254,19 +344,17 @@ if ($_POST['action'] == 'parsePhone')
         // запись в бд объявлений
         // если такого объявления нет в бд, то записывает его и ставим статус new
 
-        $newCount=0; // счетчик новых объявлений
+        $newCount = 0; // счетчик новых объявлений
 
-    foreach ($data as $key=>$value)
-    {
+        foreach ($data as $key => $value) {
 
-        $urlAd = $data[$key]['url'];
-        $link = mysqli_connect ("localhost","mysql","mysql","avito");
-        $sql = mysqli_query($link, "SELECT `status` FROM `ads` WHERE `url_ad` = '$urlAd'");
-        $row = mysqli_fetch_array($sql); // результат ячейки статуса (new/old) по url_ad
-        //echo($row['status']);
+            $urlAd = $data[$key]['url'];
+            $link = mysqli_connect("localhost", "mysql", "mysql", "avito");
+            $sql = mysqli_query($link, "SELECT `status` FROM `ads` WHERE `url_ad` = '$urlAd'");
+            $row = mysqli_fetch_array($sql); // результат ячейки статуса (new/old) по url_ad
+            //echo($row['status']);
 
-            if (!(R::findOne('ads','url_ad=?',array( $urlAd))))
-            {
+            if (!(R::findOne('ads', 'url_ad=?', array($urlAd)))) {
                 // если не нашел совпадений по url объявления, то добавляем в бд и стату новый
                 $newUrl = R::dispense('ads');
                 $newUrl->url_request = $_POST['url'];//url запроса
@@ -275,140 +363,149 @@ if ($_POST['action'] == 'parsePhone')
                 R::store($newUrl);
                 $newCount++;
             }
-            if  ((R::findOne('ads','url_ad=?',array( $urlAd))) && ($row['status'] == 'new'))
-            {
+            if ((R::findOne('ads', 'url_ad=?', array($urlAd))) && ($row['status'] == 'new')) {
                 //если уже было , то обновляем статус на old
                 $sql = mysqli_query($link, "UPDATE `ads` SET  `status` = 'old' WHERE `url_ad` = '$urlAd'") or die;
             }
-            if  ((R::findOne('ads','url_ad=?',array( $urlAd))) && ($row['status'] == 'old'))
-            {
+            if ((R::findOne('ads', 'url_ad=?', array($urlAd))) && ($row['status'] == 'old')) {
                 //если old, то пропускаем и не меняем
                 continue;
             }
 
 
-    }
-    // если есть новые объявления анимирует текст и выведет кол-во
-    if ($newCount>0)
-    {
-        echo '<h3><strong>Всего объявлений: '.$count.'
+        }
+        // если есть новые объявления анимирует текст и выведет кол-во
+        if ($newCount > 0) {
+            echo '<h3><strong>Всего объявлений: ' . $count . '
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Новых объявлений:<a class="area">'.$newCount.'</a></strong></h3>';
+        Новых объявлений:<a class="area">' . $newCount . '</a></strong></h3>';
 
-    }
-    else
-    // просто выведет кол-во объявлений
-    {
-        echo '<h2><strong>Всего объявлений: '.$count.'</strong></h2>';
-    }
+        } else // просто выведет кол-во объявлений
+        {
+            echo '<h2><strong>Всего объявлений: ' . $count . '</strong></h2>';
+        }
 
-?>
-    <hr/>
-    <div class="row">
-        <div class="col-md-6">
+        ?>
+        <hr/>
+        <div class="row">
+            <div class="col-md-6">
 
 
-        <table class="table table-condensed table-bordered table-hover" style="width:auto">
-            <tr>
-                <th>Название</th>
-                <th>Цена</th>
-                <th>Год</th>
-                <th>Дата</th>
-                <th>&nbsp;</th>
-            </tr>
-            <?php
-            foreach ($data as $k => $row) {
-                ?>
-                <tr>
-                    <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
-                    <td class="text-right"><?= substr($row['price'],0,-6) ?></td>
-                    <td><?= $row['year'] ?></td>
-                    <td><?= date($row['date']) ?></td>
-                    <td>
-                        <a href="#" data-url="<?= $row['url'] ?>" class="label label-info">Просмотр объявления</a>
-                        <a href="#" data-phone="<?= $row['url'] ?>" class="label label-warning">Показать телефон</a>
-                    </td>
-                </tr>
-                <?php
+                <table class="table table-condensed table-bordered table-hover" style="width:auto">
+                    <tr>
+                        <th>Название</th>
+                        <th>Цена</th>
+                        <th>Год</th>
+                        <th>Дата</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                    <?php
+                    foreach ($data as $k => $row) {
+                        ?>
+                        <tr>
+                            <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
+                            <td class="text-right"><?= substr($row['price'], 0, -6) ?></td>
+                            <td><?= $row['year'] ?></td>
+                            <td><?= date($row['date']) ?></td>
+                            <td>
+                               <p><a href="#" data-url="<?= $row['url'] ?>" class="label label-info">Просмотр
+                                    объявления</a>
+                               <p><a href="#" data-phone="<?= $row['url'] ?>" class="label label-warning">Показать
+                                    телефон</a>
+                            </td>
+                        </tr>
+                        <?php
 
-            }
-            ?>
-        </table>
+                    }
+                    ?>
+                </table>
 
-    </div>
-    <div class="col-md-6" id="results">
+            </div>
+            <div class="col-md-6" id="results">
 
-    </div>
-</div>
-    <?php
-
-
-
-
-} elseif ($_GET['action'] == 'contact') {
-    $avitoContact = new AvitoContact;
-
-    $imageScheme = $avitoContact->getImageScheme('phone.png', $_POST['columnFrom'], $_POST['columnTo']);
-    ?>
-    <h3>Разбор телефона</h3>
-
-    <form method="post" class="form-inline">
-
-        <div class="form-group">
-            <label>Показать колонку с индекса</label>
-            <input type="text" name="columnFrom" class="form-control" style="width:75px;" value="<?=$_POST['columnFrom']?>" />
-            до
-            <input type="text" name="columnTo" class="form-control" style="width:75px;" value="<?=$_POST['columnTo']?>" />
-        </div>
-
-        <input class="btn btn-info" type="submit" value="Показать">
-    </form>
-
-    <hr />
-
-    <?php
-
-    echo $avitoContact->debugOutput;
-
-    if ($_POST['columnTo']) {
-    	$textarea = $avitoContact->makeColumnData($imageScheme, $_POST['columnFrom'], $_POST['columnTo']);
-        echo '<textarea style="width:100%; height:200px; white-space: nowrap; font-size: 12px;">'.$textarea.'</textarea>';
-    }
-
-    $phoneNumber = $avitoContact->recognizeByScheme($imageScheme);
-
-    if ($avitoContact->error) {
-        echo '<p class="alert alert-danger">'.$avitoContact->error.'</p>';
-    }
-
-    if ($phoneNumber) {
-        $phoneNumber = 'Найдено значение - <b>'.$phoneNumber.'</b>';
-    } else {
-        $phoneNumber = 'Не найдено ни одного символа';
-    }
-
-
-    echo '<p class="badge" style="margin-top:10px; font-size:60px;">'.$phoneNumber.'</p><br /><br />';
-
-} else {
-    ?>
-    <br />
-        <div class="wrap">
-        <div class="col-sm-12" >
-            <div class="jumbotron" >
-            <h1>Привет!</h1>
-            <p>Перейти на Авито</p>
-            <p><a class="btn btn-primary btn-lg" href="https://www.avito.ru/" role="button">Начать поиск объявлений</a></p>
             </div>
         </div>
-    </div>
-    <?php
-    }
+        <?php
 
+
+    } elseif ($_GET['action'] == 'contact') {
+        $avitoContact = new AvitoContact;
+
+        $imageScheme = $avitoContact->getImageScheme('phone.png', $_POST['columnFrom'], $_POST['columnTo']);
+        ?>
+        <h3>Разбор телефона</h3>
+
+        <form method="post" class="form-inline">
+
+            <div class="form-group">
+                <label>Показать колонку с индекса</label>
+                <input type="text" name="columnFrom" class="form-control" style="width:75px;"
+                       value="<?= $_POST['columnFrom'] ?>"/>
+                до
+                <input type="text" name="columnTo" class="form-control" style="width:75px;"
+                       value="<?= $_POST['columnTo'] ?>"/>
+            </div>
+
+            <input class="btn btn-info" type="submit" value="Показать">
+        </form>
+
+        <hr/>
+
+        <?php
+
+        echo $avitoContact->debugOutput;
+
+        if ($_POST['columnTo']) {
+            $textarea = $avitoContact->makeColumnData($imageScheme, $_POST['columnFrom'], $_POST['columnTo']);
+            echo '<textarea style="width:100%; height:200px; white-space: nowrap; font-size: 12px;">' . $textarea . '</textarea>';
+        }
+
+        $phoneNumber = $avitoContact->recognizeByScheme($imageScheme);
+
+        if ($avitoContact->error) {
+            echo '<p class="alert alert-danger">' . $avitoContact->error . '</p>';
+        }
+
+        if ($phoneNumber) {
+            $phoneNumber = 'Найдено значение - <b>' . $phoneNumber . '</b>';
+        } else {
+            $phoneNumber = 'Не найдено ни одного символа';
+        }
+
+
+        echo '<p class="badge" style="margin-top:10px; font-size:60px;">' . $phoneNumber . '</p><br /><br />';
+
+    } else {
+        ?>
+        <br/>
+        <div class="wrap">
+            <div class="col-sm-12">
+                <div class="jumbotron">
+                    <h1>Привет!</h1>
+                    <p>Перейти на Авито</p>
+                    <p><a class="btn btn-primary btn-lg" href="https://www.avito.ru/" role="button">Начать поиск
+                            объявлений</a></p>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+    }
+    else
+    {
+        echo'<h1><div style="color: red;">Доступ ограничен, напишите боту СТАРТ, чтобы вас внесли в базу данных</div></h1>';
+    }
     ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+    </head>
+
+
 
 </div>
 
@@ -416,6 +513,7 @@ if ($_POST['action'] == 'parsePhone')
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
 
 
 <script type="text/javascript">

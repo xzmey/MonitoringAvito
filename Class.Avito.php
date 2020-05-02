@@ -85,13 +85,12 @@ class Avito
         $pagination = preg_split($pg = '~<span data-marker="page~is',$content);
         if (count($pagination) < 6)
         {
-            // если есть пагинации на странице
+            // если есть пагинация на странице
             if (isset($innerContent)) {
                 $dataAll = [];
                 $page = 1;
                 $maxPage = false;
-                while (true) {   // если страницы больше 5, то скипаем
-
+                while (true) {
 
                     if ($page == 1) {
                         $urlCurrent = $url;
