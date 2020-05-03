@@ -42,6 +42,18 @@ class Curl {
         return file_get_contents($fileName);
     }
 
+    function getCacheForUser($cacheId, &$fileName='')
+    {
+
+        $fileName = self::$cashDir.'/'.md5($cacheId);
+        if (!file_exists($fileName))
+        {
+            return false;
+        }
+
+        return file_get_contents($fileName);
+    }
+
     function getFilePath($cacheId, &$fileName='')
     {
         $fileName = self::$cashDir.'/'.md5($cacheId);
@@ -74,6 +86,14 @@ class Curl {
         $this->setCache($content, $cacheId);
         return $content;
 
+    }
+
+    function loadPageForUser($url)
+    {
+        $cacheId = $url;
+        $content = $this->getCacheForUser($cacheId, $cash);
+
+        return $content;
     }
 
     /**

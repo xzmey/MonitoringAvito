@@ -56,7 +56,7 @@ if ($data->type == 'message_new')
             // оповещения для админа об оплате
             // id - мой
             $vk->sendMessage('580612278', " https://vk.com/id{$id} оплатил подписку,
-         проверить оплату и поменять ему статус   http://88510f13.ngrok.io/adminpage.php‼
+         проверить оплату и поменять ему статус   http://46188bff.ngrok.io/adminpage.php‼
             ");
 
         }

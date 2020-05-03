@@ -46,7 +46,8 @@ if  (R::findOne('users', 'user_id = ?', array($_SESSION['login']['id'])))
 {
 
 
-if ($_POST['action'] == 'parseCard') {
+if ($_POST['action'] == 'parseCard')
+{
     $avito->curl->sleepMin = 3;
     $avito->curl->sleepMax = 8;
     $avito->parseCard($_POST['url'], $row);
@@ -93,13 +94,56 @@ if ($_POST['action'] == 'parseCard') {
 }
 
 
-
-$photo = $_SESSION['login']['ph'];
-echo $photo;
+if ($_POST['action'] == 'new')
+{
+    $allNew = [];
+    $data = $avito->parseAllForUser($_POST['url']);
+    foreach ($data as $key => $value) {
+        $urlAd = $data[$key]['url'];
+        $link = mysqli_connect("localhost", "mysql", "mysql", "avito");
+        $sql = mysqli_query($link, "SELECT `status` FROM `ads` WHERE `url_ad` = '$urlAd'");
+        $row = mysqli_fetch_array($sql); // результат ячейки статуса (new/old) по url_ad
+        //echo($row['status'])
+        if ($row['status'] == 'new')
+        {
+            // засунем все новые объявления в массив, чтобы потом вывести его при клике
+            array_push($allNew, $data[$key]);
+        }
+    }
 ?>
-<img src="<?
-$photo ?>" align="right" alt="Avatar" class="avatar">
+            <table class="table table-condensed table-bordered table-hover" style="width:auto">
+                <tr>
+                    <th>Название</th>
+                    <th>Цена</th>
+                    <th>Год</th>
+                    <th>Дата</th>
+                </tr>
+                <?php
+                foreach ($allNew as $k => $row) {
+                    ?>
+                    <tr>
+                        <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
+                        <td class="text-right"><?= substr($row['price'], 0, -6) ?></td>
+                        <td><?= $row['year'] ?></td>
+                        <td><?= date($row['date']) ?></td>
+                    </tr>
+                    <?php
+                }
+                ?>
+            </table>
+
+
+        <div class="col-md-6" id="results">
+
+        </div>
+
 <?php
+    exit;
+}
+
+
+//фото из сессии
+$photo = $_SESSION['login']['ph'];
 
 if ($_POST['action'] == 'parsePhone') {
 
@@ -168,6 +212,10 @@ if ($_POST['action'] == 'parsePhone') {
     <![endif]-->
 
     <style type="text/css">
+        header
+        {
+            background-image: url(images/avitus6.jpg);
+        }
 
         body
         {
@@ -196,9 +244,9 @@ if ($_POST['action'] == 'parsePhone') {
 
         /*аватар юзера*/
         .avatar {
-            margin: 20px;
-            width: 100px;
-            height: 100px;
+            margin: 5px;
+            width: 85px;
+            height: 85px;
             border-radius: 50%;
         }
 
@@ -211,7 +259,7 @@ if ($_POST['action'] == 'parsePhone') {
             width: 52px;
             height: 52px;
             animation: spin 2s linear infinite;
-            position: absolute;
+            position: fixed;
             top: 7px;
             left: 10px;
             display: none;
@@ -285,7 +333,7 @@ if ($_POST['action'] == 'parsePhone') {
 
         select
         {
-            width: 450px; /* Ширина списка в пикселах */
+            width: 250px; /* Ширина списка в пикселах */
             height: 30px;
         }
         button
@@ -294,17 +342,340 @@ if ($_POST['action'] == 'parsePhone') {
             height: 35px;
         }
 
+        #floatBarsG{
+            position:relative;
+            width:234px;
+            height:28px;
+            margin:auto;
+        }
+
+        .floatBarsG{
+            position:absolute;
+            top:0;
+            background-color:rgb(0,0,0);
+            width:28px;
+            height:28px;
+            animation-name:bounce_floatBarsG;
+            -o-animation-name:bounce_floatBarsG;
+            -ms-animation-name:bounce_floatBarsG;
+            -webkit-animation-name:bounce_floatBarsG;
+            -moz-animation-name:bounce_floatBarsG;
+            animation-duration:1.5s;
+            -o-animation-duration:1.5s;
+            -ms-animation-duration:1.5s;
+            -webkit-animation-duration:1.5s;
+            -moz-animation-duration:1.5s;
+            animation-iteration-count:infinite;
+            -o-animation-iteration-count:infinite;
+            -ms-animation-iteration-count:infinite;
+            -webkit-animation-iteration-count:infinite;
+            -moz-animation-iteration-count:infinite;
+            animation-direction:normal;
+            -o-animation-direction:normal;
+            -ms-animation-direction:normal;
+            -webkit-animation-direction:normal;
+            -moz-animation-direction:normal;
+            transform:scale(.3);
+            -o-transform:scale(.3);
+            -ms-transform:scale(.3);
+            -webkit-transform:scale(.3);
+            -moz-transform:scale(.3);
+        }
+
+        #floatBarsG_1{
+            left:0;
+            animation-delay:0.6s;
+            -o-animation-delay:0.6s;
+            -ms-animation-delay:0.6s;
+            -webkit-animation-delay:0.6s;
+            -moz-animation-delay:0.6s;
+        }
+
+        #floatBarsG_2{
+            left:29px;
+            animation-delay:0.75s;
+            -o-animation-delay:0.75s;
+            -ms-animation-delay:0.75s;
+            -webkit-animation-delay:0.75s;
+            -moz-animation-delay:0.75s;
+        }
+
+        #floatBarsG_3{
+            left:58px;
+            animation-delay:0.9s;
+            -o-animation-delay:0.9s;
+            -ms-animation-delay:0.9s;
+            -webkit-animation-delay:0.9s;
+            -moz-animation-delay:0.9s;
+        }
+
+        #floatBarsG_4{
+            left:88px;
+            animation-delay:1.05s;
+            -o-animation-delay:1.05s;
+            -ms-animation-delay:1.05s;
+            -webkit-animation-delay:1.05s;
+            -moz-animation-delay:1.05s;
+        }
+
+        #floatBarsG_5{
+            left:117px;
+            animation-delay:1.2s;
+            -o-animation-delay:1.2s;
+            -ms-animation-delay:1.2s;
+            -webkit-animation-delay:1.2s;
+            -moz-animation-delay:1.2s;
+        }
+
+        #floatBarsG_6{
+            left:146px;
+            animation-delay:1.35s;
+            -o-animation-delay:1.35s;
+            -ms-animation-delay:1.35s;
+            -webkit-animation-delay:1.35s;
+            -moz-animation-delay:1.35s;
+        }
+
+        #floatBarsG_7{
+            left:175px;
+            animation-delay:1.5s;
+            -o-animation-delay:1.5s;
+            -ms-animation-delay:1.5s;
+            -webkit-animation-delay:1.5s;
+            -moz-animation-delay:1.5s;
+        }
+
+        #floatBarsG_8{
+            left:205px;
+            animation-delay:1.64s;
+            -o-animation-delay:1.64s;
+            -ms-animation-delay:1.64s;
+            -webkit-animation-delay:1.64s;
+            -moz-animation-delay:1.64s;
+        }
+
+
+
+        @keyframes bounce_floatBarsG{
+            0%{
+                transform:scale(1);
+                background-color:rgb(0,0,0);
+            }
+
+            100%{
+                transform:scale(.3);
+                background-color:rgb(255,255,255);
+            }
+        }
+
+        @-o-keyframes bounce_floatBarsG{
+            0%{
+                -o-transform:scale(1);
+                background-color:rgb(0,0,0);
+            }
+
+            100%{
+                -o-transform:scale(.3);
+                background-color:rgb(255,255,255);
+            }
+        }
+
+        @-ms-keyframes bounce_floatBarsG{
+            0%{
+                -ms-transform:scale(1);
+                background-color:rgb(0,0,0);
+            }
+
+            100%{
+                -ms-transform:scale(.3);
+                background-color:rgb(255,255,255);
+            }
+        }
+
+        @-webkit-keyframes bounce_floatBarsG{
+            0%{
+                -webkit-transform:scale(1);
+                background-color:rgb(0,0,0);
+            }
+
+            100%{
+                -webkit-transform:scale(.3);
+                background-color:rgb(255,255,255);
+            }
+        }
+
+        @-moz-keyframes bounce_floatBarsG{
+            0%{
+                -moz-transform:scale(1);
+                background-color:rgb(0,0,0);
+            }
+
+            100%{
+                -moz-transform:scale(.3);
+                background-color:rgb(255,255,255);
+            }
+        }
+
+        aside
+        {
+            padding: 0px;
+            width: 325px;
+            float: right;
+            font-size: 20px;
+        }
+
+        /*баннер со слайдами*/
+
+
+
+        #slider { /*положение слайдера*/
+            position: relative;
+            text-align: center;
+            top: 10px;
+        }
+
+        #slider{ /*центровка слайдера*/
+            margin: 0 auto;
+        }
+
+        #slides article{ /*все изображения справа друг от доруга*/
+            width: 20%;
+            float: left;
+        }
+
+        #slides .image{ /*устанавливает общий размер блока с изображениями*/
+            width: 500%;
+            line-height: 0;
+        }
+
+        #overflow{ /*сркывает все, что находится за пределами этого блока*/
+            width: 100%;
+            overflow: hidden;
+        }
+
+        article img{ /*размер изображений слайдера*/
+            width: 100%;
+        }
+
+        #desktop:checked ~ #slider{ /*размер всего слайдера*/
+            max-width: 960px; /*максимальнная длинна*/
+        }
+
+        /*настройка переключения и положения для левой стрелки*/
+        /*если свич1-5 активны, то идет обращение к лейблу из блока с id контролс*/
+        #switch1:checked ~ #controls label:nth-child(3),
+        #switch2:checked ~ #controls label:nth-child(1),
+        #switch3:checked ~ #controls label:nth-child(2)
+        {
+            background: url('images/prev.png') no-repeat; /*заливка фона картинкой без повторений*/
+            float: left;
+            margin: 0 0 0 -84px; /*сдвиг влево*/
+            display: block;
+            height: 68px;
+            width: 68px;
+        }
+
+        /*настройка переключения и положения для правой стрелки*/
+        #switch1:checked ~ #controls label:nth-child(2),
+        #switch2:checked ~ #controls label:nth-child(3),
+        #switch3:checked ~ #controls label:nth-child(1)
+        {
+            background: url('images/next.png') no-repeat; /*заливка фона картинкой без повторений*/
+            float: right;
+            margin: 0 -84px 0 0; /*сдвиг вправо*/
+            display: block;
+            height: 68px;
+            width: 68px;
+        }
+
+        label, a{ /*при наведении на стрелки или переключатели - курсор изменится*/
+            cursor: pointer;
+        }
+
+        .all input{ /*скрывает стандартные инпуты (чекбоксы) на странице*/
+            display: none;
+        }
+
+        /*позиция изображения при активации переключателя*/
+        #switch1:checked ~ #slides .image{
+            margin-left: 0;
+        }
+
+        #switch2:checked ~ #slides .image{
+            margin-left: -100%;
+        }
+
+        #switch3:checked ~ #slides .image{
+            margin-left: -200%;
+        }
+
+        #controls{ /*положение блока всех управляющих элементов*/
+            margin: -25% 0 0 0;
+            width: 100%;
+            height: 50px;
+        }
+
+        #active label{ /*стиль отдельного переключателя*/
+            border-radius: 10px; /*скругление углов*/
+            display: inline-block; /*расположение в строку*/
+            width: 15px;
+            height: 15px;
+            background: #bbb;
+        }
+
+        #active{ /*расположение блока с переключателями*/
+            margin: 23% 0 0;
+            text-align: center;
+        }
+
+        #active label:hover{ /*поведение чекбокса при наведении*/
+            background: #76c8ff;
+            border-color: #777 !important; /*выполнение в любом случае*/
+        }
+
+        /*цвет активного лейбла при активации чекбокса*/
+        #switch1:checked ~ #active label:nth-child(1),
+        #switch2:checked ~ #active label:nth-child(2),
+        #switch3:checked ~ #active label:nth-child(3)
+
+        {
+            background: #18a3dd;
+            border-color: #18a3dd !important;
+        }
+
+        #slides .image{ /*анимация пролистывания изображений*/
+            transition: all 800ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
+        }
+
+        #controls label:hover{ /*прозрачность стрелок при наведении*/
+            opacity: 0.6;
+        }
+
+        #controls label{ /*прозрачность стрелок при отводе курсора*/
+            transition: opacity 0.2s ease-out;
+        }
+
     </style>
 </head>
 <body>
 
 <div id="loader"></div>
 
-
+<header>
 <div class="container-fluid">
 
+    <h2 align="right"><strong>Выполнен вход:
+            <?php echo $photo;?>
+            <img src="<?
+            $photo ?>" align="right" alt="Avatar" class="avatar">
+        </strong></h2>
 
-    <h1><strong>Выберите ваш url <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></strong></h1>
+    <h2 align="right"><strong><?php
+            $userName= $_SESSION['login']['name'];
+            echo $userName;
+            ?>
+        </strong></h2>
+    <h2><strong>Выберите ваш url <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></strong></h2>
 
 <?php
 // выводим url для юзера из бд
@@ -329,15 +700,34 @@ echo "</select>";
     <button type="submit" class="btn btn-default">Выполнить</button>
     </div>
     </form>
-    <hr/>
+</div>
+</header>
+
 
 
 <?php
 
-    if ($_POST['url']) {
+    if ($_POST['url'])
+    {
         $avito->curl->sleepMin = 4;
         $avito->curl->sleepMax = 9;
-        $data = $avito->parseAll($_POST['url']);
+        $data = $avito->parseAllForUser($_POST['url']);
+        if (empty($data))
+        {
+            echo '<h1><strong>Ваш запрос еще обрабытывается, ждите уведомление от бота&nbsp;
+<span id="floatBarsG">
+	<div id="floatBarsG_1" class="floatBarsG"></div>
+	<div id="floatBarsG_2" class="floatBarsG"></div>
+	<div id="floatBarsG_3" class="floatBarsG"></div>
+	<div id="floatBarsG_4" class="floatBarsG"></div>
+	<div id="floatBarsG_5" class="floatBarsG"></div>
+	<div id="floatBarsG_6" class="floatBarsG"></div>
+	<div id="floatBarsG_7" class="floatBarsG"></div>
+	<div id="floatBarsG_8" class="floatBarsG"></div>
+</span>
+</strong></h1>';
+            exit;
+        }
         //кол-во объявлений
         $count = count($data);
 
@@ -345,15 +735,20 @@ echo "</select>";
         // если такого объявления нет в бд, то записывает его и ставим статус new
 
         $newCount = 0; // счетчик новых объявлений
-
         foreach ($data as $key => $value) {
 
             $urlAd = $data[$key]['url'];
             $link = mysqli_connect("localhost", "mysql", "mysql", "avito");
             $sql = mysqli_query($link, "SELECT `status` FROM `ads` WHERE `url_ad` = '$urlAd'");
             $row = mysqli_fetch_array($sql); // результат ячейки статуса (new/old) по url_ad
-            //echo($row['status']);
+            //echo($row['status'])
+            if ($row['status'] == 'new')
+            {
+                // засунем все новые объявления в массив, чтобы потом вывести его при клике
+                $newCount++;
+            }
 
+            /*
             if (!(R::findOne('ads', 'url_ad=?', array($urlAd)))) {
                 // если не нашел совпадений по url объявления, то добавляем в бд и стату новый
                 $newUrl = R::dispense('ads');
@@ -372,22 +767,24 @@ echo "</select>";
                 continue;
             }
 
-
+            */
         }
         // если есть новые объявления анимирует текст и выведет кол-во
-        if ($newCount > 0) {
-            echo '<h3><strong>Всего объявлений: ' . $count . '
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Новых объявлений:<a class="area">' . $newCount . '</a></strong></h3>';
+        if ($newCount > 0)
+        {
+        echo '<h3><strong>Всего объявлений: ' . $count.'</strong></h3>';
+        echo '<h3><strong> Новых объявлений:<a class="area">' . $newCount . '</a></strong></h3>';
+        ?>
+    <aside>
+            <p><a href="#" data-new="<?= $_POST['url']  ?>" class="label label-warning">Показать новые объявления</a>
+            </p>
+    </aside>
 
+            <?php
         } else // просто выведет кол-во объявлений
         {
-            echo '<h2><strong>Всего объявлений: ' . $count . '</strong></h2>';
+            echo '<h3><strong>Всего объявлений: ' . $count . '</strong></h3>';
         }
-
         ?>
         <hr/>
         <div class="row">
@@ -408,7 +805,7 @@ echo "</select>";
                         <tr>
                             <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
                             <td class="text-right"><?= substr($row['price'], 0, -6) ?></td>
-                            <td><?= $row['year'] ?></td>
+                            <td><?=$row['year']?></td>
                             <td><?= date($row['date']) ?></td>
                             <td>
                                <p><a href="#" data-url="<?= $row['url'] ?>" class="label label-info">Просмотр
@@ -418,20 +815,20 @@ echo "</select>";
                             </td>
                         </tr>
                         <?php
-
                     }
                     ?>
                 </table>
 
             </div>
             <div class="col-md-6" id="results">
-
             </div>
         </div>
         <?php
 
 
-    } elseif ($_GET['action'] == 'contact') {
+    }
+    elseif ($_GET['action'] == 'contact')
+    {
         $avitoContact = new AvitoContact;
 
         $imageScheme = $avitoContact->getImageScheme('phone.png', $_POST['columnFrom'], $_POST['columnTo']);
@@ -478,19 +875,42 @@ echo "</select>";
 
         echo '<p class="badge" style="margin-top:10px; font-size:60px;">' . $phoneNumber . '</p><br /><br />';
 
-    } else {
+    }
+    else
+        {
         ?>
         <br/>
-        <div class="wrap">
-            <div class="col-sm-12">
-                <div class="jumbotron">
-                    <h1>Привет!</h1>
-                    <p>Перейти на Авито</p>
-                    <p><a class="btn btn-primary btn-lg" href="https://www.avito.ru/" role="button">Начать поиск
-                            объявлений</a></p>
+                <div class="all">
+                    <input checked type="radio" name="respond" id="desktop">
+                    <article id="slider">
+                        <input checked type="radio" name="slider" id="switch1">
+                        <input type="radio" name="slider" id="switch2">
+                        <input type="radio" name="slider" id="switch3">
+                        <div id="slides">
+                            <div id="overflow">
+                                <div class="image">
+                                    <article><img src="images/1avito.jpg"></article>
+                                    <article><img src="images/2avito.jpg"></article>
+                                    <article><img src="images/3avito.jpg"></article>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="controls">
+                            <label for="switch1"></label>
+                            <label for="switch2"></label>
+                            <label for="switch3"></label>
+                        </div>
+                        <div id="active">
+                            <label for="switch1"></label>
+                            <label for="switch2"></label>
+                            <label for="switch3"></label>
+                        </div>
+                    </article>
                 </div>
-            </div>
-        </div>
+            <footer>
+                <h2 align = "right"><strong>По всем вопросам
+                        <a href="https://vk.com/xzm3y">сюда</a></strong></h2>
+            </footer>
         <?php
     }
     }
@@ -499,15 +919,7 @@ echo "</select>";
         echo'<h1><div style="color: red;">Доступ ограничен, напишите боту СТАРТ, чтобы вас внесли в базу данных</div></h1>';
     }
     ?>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8">
-    </head>
-
-
-
-</div>
+    <meta charset="utf-8">
 
 
 
@@ -518,7 +930,8 @@ echo "</select>";
 
 <script type="text/javascript">
 
-    $(document).ready(function(){
+    $(document).ready(function()
+    {
 
         $(document).ajaxStart(function() {
             $('#loader').show();
@@ -548,11 +961,15 @@ echo "</select>";
                 $('#results').html(data)
             });
         })
+
+        $('[data-new]').click(function(e) {
+            e.preventDefault()
+            var url = $(this).data('new')
+            $.post('', 'action=new&url='+encodeURIComponent(url), function(data) {
+                $('#results').html(data)
+            });
+        })
     });
 </script>
-
-
-
-
 </body>
 </html>

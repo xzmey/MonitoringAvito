@@ -3,7 +3,7 @@
 $client_id = 7442721; // ID приложения
 $client_secret = 'E4qC2Wh6iGGkZvQkIDMe'; // Защищённый ключ
 // меняется, тк нету хоста
-$redirect_uri = 'http://88510f13.ngrok.io/auth.php'; // Адрес сайта
+$redirect_uri = 'http://46188bff.ngrok.io/auth.php'; // Адрес сайта
 
 $url = 'http://oauth.vk.com/authorize'; // Ссылка для авторизации на стороне ВК
 

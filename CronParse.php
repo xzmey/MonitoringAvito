@@ -30,7 +30,6 @@ while($row = mysqli_fetch_array($sql))
 
     $avito->curl->sleepMin = 4;
     $avito->curl->sleepMax = 10;
-    $newCount = 0; // счетчик новых объявлений
 
     // цикл из url, которые из бд
 
@@ -39,8 +38,7 @@ foreach ($urlsAll as $url=>$value)
     // для проверки , если url содержит больше 5 страниц или кривой
     $select = mysqli_query($link, "SELECT `user_id` FROM `requests` WHERE `url_request` = '$value'");
     $id = mysqli_fetch_array($select);
-
-
+    $newCount = 0; // счетчик новых объявлений
     $url = $avito->parseAll($value);
     // если url не подошел то оповестит
     if (empty($url))
@@ -90,10 +88,11 @@ foreach ($urlsAll as $url=>$value)
             ✅ URL объявления- {$urlAd},    
             Держим вас в курсе🤙🏻
             ");
+            sleep(rand(1,4));
             }
             if ($newCount==10)
             {
-                $vk->sendMessage($id['user_id'], "У вас больше 10 новых объявлений, загляните на станицу -...     
+                $vk->sendMessage($id['user_id'], "У вас больше 10 новых объявлений, загляните на станицу - http://46188bff.ngrok.io/avito.php     
             ");
             }
         }
