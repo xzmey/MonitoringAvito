@@ -4,3 +4,63 @@
 // https://www.avito.ru/izhevsk/avtomobili/bmw-ASgBAgICAUTgtg3klyg?radius=0
 
 
+
+/* таблица для бд
+
+CREATE TABLE vk_users (
+      user_id INT AUTO_INCREMENT PRIMARY KEY,
+      vk_id int
+);
+
+CREATE TABLE prices (
+      price_id INT AUTO_INCREMENT PRIMARY KEY,
+      value int,
+      url_ad char(191),
+      user_id int,
+      FOREIGN KEY (user_id) REFERENCES vk_users(user_id)
+);
+
+CREATE TABLE avg_price (
+    user_id INT,
+    parse_date date,
+    price float,
+    FOREIGN KEY (user_id) REFERENCES vk_users(user_id)
+);
+  );*/
+
+
+
+/*медиана
+
+  SET @row_number:=0;
+  SET @median_group:='';
+
+  SELECT
+      median_group, AVG(value) AS median
+  FROM
+      (SELECT
+          @row_number:=CASE
+                  WHEN @median_group = user_id THEN @row_number + 1
+                  ELSE 1
+              END AS count_of_group,
+              @median_group:=user_id AS median_group,
+              user_id,
+              value,
+              (SELECT
+                      COUNT(*)
+                  FROM
+                      prices
+                  WHERE
+                      a.user_id = user_id) AS total_of_group
+      FROM
+          (SELECT
+          user_id, value
+      FROM
+          prices
+      ORDER BY user_id , value) AS a) AS b
+  WHERE
+      count_of_group BETWEEN total_of_group / 2.0 AND total_of_group / 2.0 + 1
+  GROUP BY median_group
+
+  */
+

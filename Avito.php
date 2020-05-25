@@ -151,17 +151,19 @@ if ($_POST['action'] == 'parsePhone') {
     $avito->curl->sleepMax = 8;
 
     // Подготавливаем входные параметры
+
+    // кэш месяц в обоих случаях, тк телефон не поменяется
     $url = $_POST['url'];
     preg_match('~_(\d+)$~i', $url, $a);
     $id = $a[1];
-    $cardContent = $avito->curl->phoneLoad($url, 604800);
+    $cardContent = $avito->curl->phoneLoad($url, 2419200);
     // Определяем phoneUrl
     $avitoContact = new AvitoContact;
     $phoneUrl = $avitoContact->getPhoneUrl($cardContent, $id);
     //var_dump($phoneUrl);
 
     // Грузим картинку по phoneUrl
-    $imgContent = $avito->curl->phoneLoad($phoneUrl, 604800);
+    $imgContent = $avito->curl->phoneLoad($phoneUrl, 2419200);
     // Контент дошел...
     // Разбираем ее и сохраняем в файл
     preg_match('~{(.*?)}~is', $imgContent, $jj);
@@ -212,11 +214,6 @@ if ($_POST['action'] == 'parsePhone') {
     <![endif]-->
 
     <style type="text/css">
-        header
-        {
-            background-image: url(images/avitus6.jpg);
-        }
-
         body
         {
             background-repeat: no-repeat;
@@ -661,7 +658,6 @@ if ($_POST['action'] == 'parsePhone') {
 
 <div id="loader"></div>
 
-<header>
 <div class="container-fluid">
 
     <h2 align="right"><strong>Выполнен вход:
@@ -697,12 +693,11 @@ echo "</select>";
 
 ?>
     <span class="input-group-addon"><a href="<?= $_POST['url'] ?>" target="_blank">URL</a></span>
+    <span class="input-group-addon"><a href="/PriceDynamics.php" target="_blank">Показать динамику цены</a></span>
     <button type="submit" class="btn btn-default">Выполнить</button>
     </div>
     </form>
 </div>
-</header>
-
 
 
 <?php

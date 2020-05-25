@@ -4,7 +4,7 @@ include "vk_api.php";
 require $_SERVER['DOCUMENT_ROOT'].'/db.php';
 
 const VK_KEY = "4dec5adac64862cecd0ebf2cef7e2aa01bb1e86b42abf2df5731c299d7d1204b80173798e8458dc7243b1";  // Токен сообщества
-const ACCESS_KEY = "6306747e";  // Тот самый ключ из сообщества
+const ACCESS_KEY = "6661dc63";  // Тот самый ключ из сообщества
 const VERSION = "5.0"; // Версия API VK
 error_reporting(0);
 
@@ -29,7 +29,7 @@ if ($data->type == 'message_new')
     // начало
     if($cmd == 'СТАРТ' || $cmd == 'старт' || $cmd == 'cnfhn' ||  $cmd == '!старт')
     {
-
+        $link = mysqli_connect ("localhost","mysql","mysql","avito"); // для задания
         $vk->sendMessage($id, "
         Чтобы пользоваться ботом, нужно оплатить подписку✅ 
         После оплаты напишите ОПЛАТИЛ✅ 
@@ -43,6 +43,12 @@ if ($data->type == 'message_new')
             $new_user->status='без оплаты'; // статус оплаты, меняется админом
             R::store($new_user);
         }
+        $vk_user2 = R::findOne('vk_users', 'vk_id = ?', array($id));// для задания
+        if(!$vk_user2)// для задания
+        {// для задания
+            $insert = mysqli_query($link, "INSERT INTO `vk_users`(vk_id) VALUES('$id')");// для задания
+        }// для задания
+
     }
     // оплата, если отправилась команда, то отправить оповещение админу
     if($cmd == '!оплатил' || $cmd == 'ОПЛАТИЛ' || $cmd == 'оплатил' ||  $cmd == 'Оплатил')
@@ -56,7 +62,7 @@ if ($data->type == 'message_new')
             // оповещения для админа об оплате
             // id - мой
             $vk->sendMessage('580612278', " https://vk.com/id{$id} оплатил подписку,
-         проверить оплату и поменять ему статус   http://46188bff.ngrok.io/adminpage.php‼
+         проверить оплату и поменять ему статус   http://82f6f616.ngrok.io/adminpage.php‼
             ");
 
         }

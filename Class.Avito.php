@@ -13,8 +13,8 @@ class Avito
 
     function parsePage($url)
     {
-        // поменял с 3600 чтобы тестить
-        $content = $this->curl->load($url, $cash = 1209600);
+        // кэш месяц для теста
+        $content = $this->curl->load($url, $cash = 4838400);
 
         preg_match('~<div class="snippet-list js-catalog_serp".*?<div class="js-pages pagination-pagination-2j5na">~is', $content, $a);
         $innerContent = $a[0];
@@ -78,7 +78,7 @@ class Avito
     function parseAll($url)
         //$fromPage=1, $maxPage=false
     {
-        $content = $this->curl->load($url, $cash = 1209600);
+        $content = $this->curl->load($url, $cash = 4838400);
         preg_match('~<div class="snippet-list js-catalog_serp".*?<div class="js-pages pagination-pagination-2j5na">~is', $content, $a);
         $innerContent = $a[0];
 
@@ -251,7 +251,8 @@ class Avito
 
     function parseCard($url, &$row)
     {
-        $cardContent = $this->curl->load($url, 1209600);
+        // тут всегда кэш месяц, тк не изменят описание
+        $cardContent = $this->curl->load($url, 2419200);
         Log::get()->log(' card['.strlen($cardContent).']', 0);
 
         //var_dump(strlen($cardContent));
