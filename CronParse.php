@@ -27,9 +27,8 @@ while($row = mysqli_fetch_array($sql))
     array_push($urlsAll, $row['url_request']);
 }
 
-
-    $avito->curl->sleepMin = 4;
-    $avito->curl->sleepMax = 10;
+    $avito->curl->sleepMin = 10;
+    $avito->curl->sleepMax = 20;
 
     // цикл из url, которые из бд
 
@@ -48,69 +47,6 @@ foreach ($urlsAll as $url=>$value)
             ");
     }
 
-    /*для задания*/
-    $date = date("Y-m-d");// дата парсинга
-
-    // если дата не сегодняшняя, то сделать insert с новыми данными
-    $selectUserId = mysqli_query($link, "SELECT `user_id` FROM `vk_users` WHERE `vk_id` = '{$id['user_id']}'");
-    $user_id = mysqli_fetch_array($selectUserId); // user_id из vk_users
-    $median = "SET @row_number:=0;";
-    $median .= "SET @median_group:='';";
-    $median .= "
-  SELECT median FROM (SELECT
-      median_group, AVG(value) AS median
-  FROM
-      (SELECT
-          @row_number:=CASE
-                  WHEN @median_group = user_id THEN @row_number + 1
-                  ELSE 1
-              END AS count_of_group,
-              @median_group:=user_id AS median_group,
-              user_id,
-              value,
-              (SELECT
-                      COUNT(*)
-                  FROM
-                      prices
-                  WHERE
-                      a.user_id = user_id) AS total_of_group
-      FROM
-          (SELECT
-          user_id, value
-      FROM
-          prices
-      ORDER BY user_id , value) AS a) AS b
-  WHERE
-      count_of_group BETWEEN total_of_group / 2.0 AND total_of_group / 2.0 + 1
-  GROUP BY median_group)AS result
-  WHERE median_group='{$user_id['user_id']}';";
-    if ( mysqli_multi_query( $link, $median ) )
-    {
-        do {
-            if ( $result = mysqli_store_result( $link ) ) {
-                while ( $row = mysqli_fetch_row( $result ) ) {
-
-                    $medianPrice=$row;
-                }
-                mysqli_free_result( $result );
-            }
-        }
-        while ( mysqli_more_results( $link ) && mysqli_next_result( $link ) );
-    }
-    //$medianPrice[0] - тут лежит медиана для юзера
-    $priceResult=(double)$medianPrice[0];
-    /*
-    var_dump($priceResult);
-    var_dump($user_id['user_id']);
-    */
-    // последняя дата для юзера..
-    $maxDate = mysqli_fetch_array((mysqli_query($link, "SELECT MAX(`parse_date`) FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}'")));
-    //$maxDate[0]- псоледняя дата парсинга для user_id
-    if($date>$maxDate[0])
-    {
-        $insertData = mysqli_query($link, "INSERT INTO `avg_price`(user_id,parse_date,price) VALUES('{$user_id['user_id']}','$date','$priceResult')");
-    }
-    /*для задания*/
 
     foreach ($url as $key=>$ad)
     {
@@ -123,13 +59,15 @@ foreach ($urlsAll as $url=>$value)
 
         //поля: название $ad['name'], цена substr($ad['price'],0,-6), дата подачи date($ad['date']), год(если авто) $ad['year']
 
-        $price = substr($ad['price'],0,-6); // цена
-        $intPrice = preg_replace("/\s+/", "", $price);// убираем пробелы для записи в бд с полем типа int
+        $price = (int)$ad['price']; // цена
+        // если цена не указана
+
+
         $selectUserId = mysqli_query($link, "SELECT `user_id` FROM `vk_users` WHERE `vk_id` = '{$id['user_id']}'");
         $user_id = mysqli_fetch_array($selectUserId); // user_id из vk_users
         if (!(R::findOne('prices','url_ad=?',array( $urlAd))))// для задания
         {// для задания
-            $insert = mysqli_query($link, "INSERT INTO `prices`(value,url_ad,user_id) VALUES('$intPrice','$urlAd','{$user_id['user_id']}')");// для задания
+            $insert = mysqli_query($link, "INSERT INTO `prices`(value,url_ad,url_req,user_id) VALUES('$price','$urlAd','$value','{$user_id['user_id']}')");// для задания
         }// для задания
 
 
@@ -182,4 +120,88 @@ foreach ($urlsAll as $url=>$value)
     }
     sleep(rand(10,25));
 }
+
+/*для задания*/
+$date = date("Y-m-d");// дата парсинга
+
+// если дата не сегодняшняя, то сделать insert с новыми данными
+$selectUserId = mysqli_query($link, "SELECT `user_id` FROM `vk_users` WHERE `vk_id` = '{$id['user_id']}'");
+$user_id = mysqli_fetch_array($selectUserId); // user_id из vk_users
+// все запросы на юзера
+$selectUrlReqForUser = mysqli_query($link, "SELECT `url_request` FROM `requests` WHERE `user_id` = '{$id['user_id']}'");
+$Requests=[];
+while($Url_req = mysqli_fetch_array($selectUrlReqForUser))
+{
+    array_push($Requests, $Url_req[0]);
+}
+// $Requests- все запросы юзера
+foreach ($Requests as $request=>$req) {
+    $median = "SET @row_number:=0;";
+    $median .= "SET @median_group:='';";
+    $median .= "
+  SELECT median FROM (SELECT
+      median_group, AVG(value) AS median
+  FROM
+      (SELECT
+          @row_number:=CASE
+                  WHEN @median_group = user_id THEN @row_number + 1
+                  ELSE 1
+              END AS count_of_group,
+              @median_group:=user_id AS median_group,
+              user_id,
+              value,
+              (SELECT
+                      COUNT(*)
+                  FROM
+                      prices
+                  WHERE
+                   url_req='$req' AND  a.user_id = user_id) AS total_of_group
+      FROM
+          (SELECT
+          user_id, value
+      FROM
+          prices
+      WHERE url_req='$req'   
+      ORDER BY user_id , value) AS a) AS b
+  WHERE
+      count_of_group BETWEEN total_of_group / 2.0 AND total_of_group / 2.0 + 1
+  GROUP BY median_group)AS result
+  WHERE median_group='{$user_id['user_id']}';";
+
+    if (mysqli_multi_query($link, $median)) {
+        do {
+            if ($result = mysqli_store_result($link)) {
+                while ($row = mysqli_fetch_row($result)) {
+
+                    $medianPrice = $row;
+                }
+                mysqli_free_result($result);
+            }
+        } while (mysqli_more_results($link) && mysqli_next_result($link));
+    }
+    //var_dump($medianPrice[0]);
+
+    //$medianPrice[0] - тут лежит медиана для юзера
+    $priceResult = (double)$medianPrice[0];
+    /*
+    var_dump($priceResult);
+    var_dump($user_id['user_id']);
+    */
+    // последняя дата для юзера..
+    $maxDate = mysqli_fetch_array((mysqli_query($link, "SELECT MAX(`parse_date`) FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}'")));
+
+    $countUrls = ( mysqli_fetch_array((mysqli_query($link, "SELECT COUNT(`url_req`) FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}' AND `parse_date` = '{$maxDate[0]}' AND `url_req` ='$req' "))));
+    /*
+    var_dump($req);
+    var_dump($maxDate[0]);
+    var_dump($countUrls[0]);
+    */
+    //$maxDate[0]- псоледняя дата парсинга для user_id
+    // если count() с таким url_req и по такой дате >1, то не записываем
+    if ($countUrls[0]<1) {
+        $insertData = mysqli_query($link, "INSERT INTO `avg_price`(user_id,parse_date,price,url_req) VALUES('{$user_id['user_id']}','$date','$priceResult','$req')");
+    }
+}
+/*для задания*/
+
 ?>

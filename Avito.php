@@ -110,34 +110,34 @@ if ($_POST['action'] == 'new')
             array_push($allNew, $data[$key]);
         }
     }
-?>
-            <table class="table table-condensed table-bordered table-hover" style="width:auto">
-                <tr>
-                    <th>Название</th>
-                    <th>Цена</th>
-                    <th>Год</th>
-                    <th>Дата</th>
-                </tr>
-                <?php
-                foreach ($allNew as $k => $row) {
-                    ?>
-                    <tr>
-                        <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
-                        <td class="text-right"><?= substr($row['price'], 0, -6) ?></td>
-                        <td><?= $row['year'] ?></td>
-                        <td><?= date($row['date']) ?></td>
-                    </tr>
-                    <?php
-                }
-                ?>
-            </table>
+    ?>
+    <table class="table table-condensed table-bordered table-hover" style="width:auto">
+        <tr>
+            <th>Название</th>
+            <th>Цена</th>
+            <th>Год</th>
+            <th>Дата</th>
+        </tr>
+        <?php
+        foreach ($allNew as $k => $row) {
+            ?>
+            <tr>
+                <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
+                <td class="text-right"><?= substr($row['price'], 0, -6) ?></td>
+                <td><?= $row['year'] ?></td>
+                <td><?= date($row['date']) ?></td>
+            </tr>
+            <?php
+        }
+        ?>
+    </table>
 
 
-        <div class="col-md-6" id="results">
+    <div class="col-md-6" id="results">
 
-        </div>
+    </div>
 
-<?php
+    <?php
     exit;
 }
 
@@ -673,43 +673,42 @@ if ($_POST['action'] == 'parsePhone') {
         </strong></h2>
     <h2><strong>Выберите ваш url <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></strong></h2>
 
-<?php
-// выводим url для юзера из бд
-$sessionId = $_SESSION['login']['id'];
-$selectLink = mysqli_connect ("localhost","mysql","mysql","avito");
-$sqlSelectUrl = mysqli_query($selectLink, "SELECT `url_request` FROM `requests` WHERE `user_id` = '$sessionId'") or die;
-?>
-
+    <?php
+    // выводим url для юзера из бд
+    $sessionId = $_SESSION['login']['id'];
+    $selectLink = mysqli_connect ("localhost","mysql","mysql","avito");
+    $sqlSelectUrl = mysqli_query($selectLink, "SELECT `url_request` FROM `requests` WHERE `user_id` = '$sessionId'") or die;
+    ?>
     <form class="form-inline avito-form" method="post">
-    <div class="form-group input-group">
+        <div class="form-group input-group">
 
-<?php
-echo "<select name=\"url\">";
-while($rowUrl = mysqli_fetch_array($sqlSelectUrl))
-{
-    echo "<option>".$rowUrl['url_request']."</option>";
-}
-echo "</select>";
+            <?php
+            echo "<select name=\"url\">";
+            while($rowUrl = mysqli_fetch_array($sqlSelectUrl))
+            {
+                echo "<option>".$rowUrl['url_request']."</option>";
+            }
+            echo "</select>";
 
-?>
-    <span class="input-group-addon"><a href="<?= $_POST['url'] ?>" target="_blank">URL</a></span>
-    <span class="input-group-addon"><a href="/PriceDynamics.php" target="_blank">Показать динамику цены</a></span>
-    <button type="submit" class="btn btn-default">Выполнить</button>
-    </div>
+            ?>
+            <span class="input-group-addon"><a href="<?= $_POST['url'] ?>" target="_blank">URL</a></span>
+            <span class="input-group-addon"><a href="/PriceDynamics.php?url_req='<?=urlencode($_POST['url'])?>" target="_blank">Показать динамику цены</a></span>
+            <button type="submit" class="btn btn-default">Выполнить</button>
+        </div>
     </form>
 </div>
 
 
 <?php
 
-    if ($_POST['url'])
+if ($_POST['url'])
+{
+    $avito->curl->sleepMin = 4;
+    $avito->curl->sleepMax = 9;
+    $data = $avito->parseAllForUser($_POST['url']);
+    if (empty($data))
     {
-        $avito->curl->sleepMin = 4;
-        $avito->curl->sleepMax = 9;
-        $data = $avito->parseAllForUser($_POST['url']);
-        if (empty($data))
-        {
-            echo '<h1><strong>Ваш запрос еще обрабытывается, ждите уведомление от бота&nbsp;
+        echo '<h1><strong>Ваш запрос еще обрабытывается, ждите уведомление от бота&nbsp;
 <span id="floatBarsG">
 	<div id="floatBarsG_1" class="floatBarsG"></div>
 	<div id="floatBarsG_2" class="floatBarsG"></div>
@@ -721,200 +720,200 @@ echo "</select>";
 	<div id="floatBarsG_8" class="floatBarsG"></div>
 </span>
 </strong></h1>';
-            exit;
-        }
-        //кол-во объявлений
-        $count = count($data);
+        exit;
+    }
+    //кол-во объявлений
+    $count = count($data);
 
-        // запись в бд объявлений
-        // если такого объявления нет в бд, то записывает его и ставим статус new
+    // запись в бд объявлений
+    // если такого объявления нет в бд, то записывает его и ставим статус new
 
-        $newCount = 0; // счетчик новых объявлений
-        foreach ($data as $key => $value) {
+    $newCount = 0; // счетчик новых объявлений
+    foreach ($data as $key => $value) {
 
-            $urlAd = $data[$key]['url'];
-            $link = mysqli_connect("localhost", "mysql", "mysql", "avito");
-            $sql = mysqli_query($link, "SELECT `status` FROM `ads` WHERE `url_ad` = '$urlAd'");
-            $row = mysqli_fetch_array($sql); // результат ячейки статуса (new/old) по url_ad
-            //echo($row['status'])
-            if ($row['status'] == 'new')
-            {
-                // засунем все новые объявления в массив, чтобы потом вывести его при клике
-                $newCount++;
-            }
-
-            /*
-            if (!(R::findOne('ads', 'url_ad=?', array($urlAd)))) {
-                // если не нашел совпадений по url объявления, то добавляем в бд и стату новый
-                $newUrl = R::dispense('ads');
-                $newUrl->url_request = $_POST['url'];//url запроса
-                $newUrl->url_ad = $urlAd;//url объявления
-                $newUrl->status = 'new';
-                R::store($newUrl);
-                $newCount++;
-            }
-            if ((R::findOne('ads', 'url_ad=?', array($urlAd))) && ($row['status'] == 'new')) {
-                //если уже было , то обновляем статус на old
-                $sql = mysqli_query($link, "UPDATE `ads` SET  `status` = 'old' WHERE `url_ad` = '$urlAd'") or die;
-            }
-            if ((R::findOne('ads', 'url_ad=?', array($urlAd))) && ($row['status'] == 'old')) {
-                //если old, то пропускаем и не меняем
-                continue;
-            }
-
-            */
-        }
-        // если есть новые объявления анимирует текст и выведет кол-во
-        if ($newCount > 0)
+        $urlAd = $data[$key]['url'];
+        $link = mysqli_connect("localhost", "mysql", "mysql", "avito");
+        $sql = mysqli_query($link, "SELECT `status` FROM `ads` WHERE `url_ad` = '$urlAd'");
+        $row = mysqli_fetch_array($sql); // результат ячейки статуса (new/old) по url_ad
+        //echo($row['status'])
+        if ($row['status'] == 'new')
         {
+            // засунем все новые объявления в массив, чтобы потом вывести его при клике
+            $newCount++;
+        }
+
+        /*
+        if (!(R::findOne('ads', 'url_ad=?', array($urlAd)))) {
+            // если не нашел совпадений по url объявления, то добавляем в бд и стату новый
+            $newUrl = R::dispense('ads');
+            $newUrl->url_request = $_POST['url'];//url запроса
+            $newUrl->url_ad = $urlAd;//url объявления
+            $newUrl->status = 'new';
+            R::store($newUrl);
+            $newCount++;
+        }
+        if ((R::findOne('ads', 'url_ad=?', array($urlAd))) && ($row['status'] == 'new')) {
+            //если уже было , то обновляем статус на old
+            $sql = mysqli_query($link, "UPDATE `ads` SET  `status` = 'old' WHERE `url_ad` = '$urlAd'") or die;
+        }
+        if ((R::findOne('ads', 'url_ad=?', array($urlAd))) && ($row['status'] == 'old')) {
+            //если old, то пропускаем и не меняем
+            continue;
+        }
+
+        */
+    }
+    // если есть новые объявления анимирует текст и выведет кол-во
+    if ($newCount > 0)
+    {
         echo '<h3><strong>Всего объявлений: ' . $count.'</strong></h3>';
         echo '<h3><strong> Новых объявлений:<a class="area">' . $newCount . '</a></strong></h3>';
         ?>
-    <aside>
+        <aside>
             <p><a href="#" data-new="<?= $_POST['url']  ?>" class="label label-warning">Показать новые объявления</a>
             </p>
-    </aside>
+        </aside>
 
-            <?php
-        } else // просто выведет кол-во объявлений
-        {
-            echo '<h3><strong>Всего объявлений: ' . $count . '</strong></h3>';
-        }
-        ?>
-        <hr/>
-        <div class="row">
-            <div class="col-md-6">
-
-
-                <table class="table table-condensed table-bordered table-hover" style="width:auto">
-                    <tr>
-                        <th>Название</th>
-                        <th>Цена</th>
-                        <th>Год</th>
-                        <th>Дата</th>
-                        <th>&nbsp;</th>
-                    </tr>
-                    <?php
-                    foreach ($data as $k => $row) {
-                        ?>
-                        <tr>
-                            <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
-                            <td class="text-right"><?= substr($row['price'], 0, -6) ?></td>
-                            <td><?=$row['year']?></td>
-                            <td><?= date($row['date']) ?></td>
-                            <td>
-                               <p><a href="#" data-url="<?= $row['url'] ?>" class="label label-info">Просмотр
-                                    объявления</a>
-                               <p><a href="#" data-phone="<?= $row['url'] ?>" class="label label-warning">Показать
-                                    телефон</a>
-                            </td>
-                        </tr>
-                        <?php
-                    }
-                    ?>
-                </table>
-
-            </div>
-            <div class="col-md-6" id="results">
-            </div>
-        </div>
         <?php
-
-
-    }
-    elseif ($_GET['action'] == 'contact')
+    } else // просто выведет кол-во объявлений
     {
-        $avitoContact = new AvitoContact;
-
-        $imageScheme = $avitoContact->getImageScheme('phone.png', $_POST['columnFrom'], $_POST['columnTo']);
-        ?>
-        <h3>Разбор телефона</h3>
-
-        <form method="post" class="form-inline">
-
-            <div class="form-group">
-                <label>Показать колонку с индекса</label>
-                <input type="text" name="columnFrom" class="form-control" style="width:75px;"
-                       value="<?= $_POST['columnFrom'] ?>"/>
-                до
-                <input type="text" name="columnTo" class="form-control" style="width:75px;"
-                       value="<?= $_POST['columnTo'] ?>"/>
-            </div>
-
-            <input class="btn btn-info" type="submit" value="Показать">
-        </form>
-
-        <hr/>
-
-        <?php
-
-        echo $avitoContact->debugOutput;
-
-        if ($_POST['columnTo']) {
-            $textarea = $avitoContact->makeColumnData($imageScheme, $_POST['columnFrom'], $_POST['columnTo']);
-            echo '<textarea style="width:100%; height:200px; white-space: nowrap; font-size: 12px;">' . $textarea . '</textarea>';
-        }
-
-        $phoneNumber = $avitoContact->recognizeByScheme($imageScheme);
-
-        if ($avitoContact->error) {
-            echo '<p class="alert alert-danger">' . $avitoContact->error . '</p>';
-        }
-
-        if ($phoneNumber) {
-            $phoneNumber = 'Найдено значение - <b>' . $phoneNumber . '</b>';
-        } else {
-            $phoneNumber = 'Не найдено ни одного символа';
-        }
-
-
-        echo '<p class="badge" style="margin-top:10px; font-size:60px;">' . $phoneNumber . '</p><br /><br />';
-
-    }
-    else
-        {
-        ?>
-        <br/>
-                <div class="all">
-                    <input checked type="radio" name="respond" id="desktop">
-                    <article id="slider">
-                        <input checked type="radio" name="slider" id="switch1">
-                        <input type="radio" name="slider" id="switch2">
-                        <input type="radio" name="slider" id="switch3">
-                        <div id="slides">
-                            <div id="overflow">
-                                <div class="image">
-                                    <article><img src="images/1avito.jpg"></article>
-                                    <article><img src="images/2avito.jpg"></article>
-                                    <article><img src="images/3avito.jpg"></article>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="controls">
-                            <label for="switch1"></label>
-                            <label for="switch2"></label>
-                            <label for="switch3"></label>
-                        </div>
-                        <div id="active">
-                            <label for="switch1"></label>
-                            <label for="switch2"></label>
-                            <label for="switch3"></label>
-                        </div>
-                    </article>
-                </div>
-            <footer>
-                <h2 align = "right"><strong>По всем вопросам
-                        <a href="https://vk.com/xzm3y">сюда</a></strong></h2>
-            </footer>
-        <?php
-    }
-    }
-    else
-    {
-        echo'<h1><div style="color: red;">Доступ ограничен, напишите боту СТАРТ, чтобы вас внесли в базу данных</div></h1>';
+        echo '<h3><strong>Всего объявлений: ' . $count . '</strong></h3>';
     }
     ?>
-    <meta charset="utf-8">
+    <hr/>
+    <div class="row">
+        <div class="col-md-6">
+
+
+            <table class="table table-condensed table-bordered table-hover" style="width:auto">
+                <tr>
+                    <th>Название</th>
+                    <th>Цена</th>
+                    <th>Год</th>
+                    <th>Дата</th>
+                    <th>&nbsp;</th>
+                </tr>
+                <?php
+                foreach ($data as $k => $row) {
+                    ?>
+                    <tr>
+                        <td><a href="<?= $row['url'] ?>" target="_blank"><?= $row['name'] ?></a></td>
+                        <td class="text-right"><?= $row['price']?></td>
+                        <td><?=$row['year']?></td>
+                        <td><?= date($row['date']) ?></td>
+                        <td>
+                            <p><a href="#" data-url="<?= $row['url'] ?>" class="label label-info">Просмотр
+                                    объявления</a>
+                            <p><a href="#" data-phone="<?= $row['url'] ?>" class="label label-warning">Показать
+                                    телефон</a>
+                        </td>
+                    </tr>
+                    <?php
+                }
+                ?>
+            </table>
+
+        </div>
+        <div class="col-md-6" id="results">
+        </div>
+    </div>
+    <?php
+
+
+}
+elseif ($_GET['action'] == 'contact')
+{
+    $avitoContact = new AvitoContact;
+
+    $imageScheme = $avitoContact->getImageScheme('phone.png', $_POST['columnFrom'], $_POST['columnTo']);
+    ?>
+    <h3>Разбор телефона</h3>
+
+    <form method="post" class="form-inline">
+
+        <div class="form-group">
+            <label>Показать колонку с индекса</label>
+            <input type="text" name="columnFrom" class="form-control" style="width:75px;"
+                   value="<?= $_POST['columnFrom'] ?>"/>
+            до
+            <input type="text" name="columnTo" class="form-control" style="width:75px;"
+                   value="<?= $_POST['columnTo'] ?>"/>
+        </div>
+
+        <input class="btn btn-info" type="submit" value="Показать">
+    </form>
+
+    <hr/>
+
+    <?php
+
+    echo $avitoContact->debugOutput;
+
+    if ($_POST['columnTo']) {
+        $textarea = $avitoContact->makeColumnData($imageScheme, $_POST['columnFrom'], $_POST['columnTo']);
+        echo '<textarea style="width:100%; height:200px; white-space: nowrap; font-size: 12px;">' . $textarea . '</textarea>';
+    }
+
+    $phoneNumber = $avitoContact->recognizeByScheme($imageScheme);
+
+    if ($avitoContact->error) {
+        echo '<p class="alert alert-danger">' . $avitoContact->error . '</p>';
+    }
+
+    if ($phoneNumber) {
+        $phoneNumber = 'Найдено значение - <b>' . $phoneNumber . '</b>';
+    } else {
+        $phoneNumber = 'Не найдено ни одного символа';
+    }
+
+
+    echo '<p class="badge" style="margin-top:10px; font-size:60px;">' . $phoneNumber . '</p><br /><br />';
+
+}
+else
+{
+    ?>
+    <br/>
+    <div class="all">
+        <input checked type="radio" name="respond" id="desktop">
+        <article id="slider">
+            <input checked type="radio" name="slider" id="switch1">
+            <input type="radio" name="slider" id="switch2">
+            <input type="radio" name="slider" id="switch3">
+            <div id="slides">
+                <div id="overflow">
+                    <div class="image">
+                        <article><img src="images/1avito.jpg"></article>
+                        <article><img src="images/2avito.jpg"></article>
+                        <article><img src="images/3avito.jpg"></article>
+                    </div>
+                </div>
+            </div>
+            <div id="controls">
+                <label for="switch1"></label>
+                <label for="switch2"></label>
+                <label for="switch3"></label>
+            </div>
+            <div id="active">
+                <label for="switch1"></label>
+                <label for="switch2"></label>
+                <label for="switch3"></label>
+            </div>
+        </article>
+    </div>
+    <footer>
+        <h2 align = "right"><strong>По всем вопросам
+                <a href="https://vk.com/xzm3y">сюда</a></strong></h2>
+    </footer>
+    <?php
+}
+}
+else
+{
+    echo'<h1><div style="color: red;">Доступ ограничен, напишите боту СТАРТ, чтобы вас внесли в базу данных</div></h1>';
+}
+?>
+<meta charset="utf-8">
 
 
 

@@ -5,6 +5,8 @@ include 'pChart/pData.class.php';
 include 'pChart/pCache.class.php';
 include 'pChart/pChart.class.php';
 require 'db.php';
+error_reporting(0);// вывод ошибок
+
 
 session_start();
 if(!$_SESSION['login'])
@@ -13,21 +15,27 @@ if(!$_SESSION['login'])
     exit();
 }
 
+//var_dump($_GET['url_req']);// url запроса по которому смотрим динамику цены
+$url_req = substr($_GET['url_req'],1);
 $myData = new pData();
 $rows=[];
 $link = mysqli_connect ("localhost","mysql","mysql","avito");
 $selectId =  mysqli_query($link, "SELECT `user_id` FROM `vk_users` WHERE `vk_id`='{$_SESSION['login']['id']}'");
 $user_id = mysqli_fetch_array($selectId);
+
 //$user_id['user_id'] - user_id пользователя в сессии
-$sql = mysqli_query($link, "SELECT `parse_date`,`price` FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}'");
+$sql = mysqli_query($link, "SELECT `parse_date`,`price` FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}' AND `url_req`='$url_req'");
+
 
 while($row = mysqli_fetch_array($sql))
-{   /*
+{
+    /*
     var_dump($row['price']);
     var_dump($row['parse_date']);
-   */
+    */
     $myData->AddPoint($row['price'],"price");
     $myData->AddPoint($row['parse_date'],"date");
+
 }
 
 // x — это ось абсцисс, а y —  ось ординат

@@ -14,7 +14,7 @@ class Avito
     function parsePage($url)
     {
         // кэш месяц для теста
-        $content = $this->curl->load($url, $cash = 4838400);
+        $content = $this->curl->load($url, $cash = 7200);
 
         preg_match('~<div class="snippet-list js-catalog_serp".*?<div class="js-pages pagination-pagination-2j5na">~is', $content, $a);
         $innerContent = $a[0];
@@ -61,7 +61,8 @@ class Avito
             preg_match('~ href="\s*([^"]+)"~i', $rowContent, $a);
             $row['url'] = 'https://www.avito.ru' . $a[1];
             preg_match('~\n\s*>\n(.*?)<~is', $rowContent, $a);
-            $row['price']= $a[1];
+            $price= $a[1];
+            $row['price']=preg_replace("/[^,.0-9]/", '', $price);
 
             Log::get()->log($row['name']);
 
@@ -78,12 +79,13 @@ class Avito
     function parseAll($url)
         //$fromPage=1, $maxPage=false
     {
-        $content = $this->curl->load($url, $cash = 4838400);
+        $content = $this->curl->load($url, $cash = 7200);
         preg_match('~<div class="snippet-list js-catalog_serp".*?<div class="js-pages pagination-pagination-2j5na">~is', $content, $a);
         $innerContent = $a[0];
 
         //у url не больше 5 страниц, так как возможен бан(и какой смысл мониторить если и так много вариантов)
         $pagination = preg_split($pg = '~<span data-marker="page~is',$content);
+
         if (count($pagination) < 6)
         {
             // если есть пагинация на странице
@@ -180,8 +182,8 @@ class Avito
             preg_match('~ href="\s*([^"]+)"~i', $rowContent, $a);
             $row['url'] = 'https://www.avito.ru' . $a[1];
             preg_match('~\n\s*>\n(.*?)<~is', $rowContent, $a);
-            $row['price']= $a[1];
-
+            $price= $a[1];
+            $row['price']=preg_replace("/[^,.0-9]/", '', $price);
             Log::get()->log($row['name']);
 
             if ($this->loadCard) {

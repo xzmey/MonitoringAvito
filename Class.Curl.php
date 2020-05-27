@@ -180,16 +180,16 @@ class Curl {
             $headers = array(
                 ':authority: www.avito.ru',
                 ':method: GET',
-                ':path: '.str_replace('https://www.avito.ru', '', $url),
+                ':path: ' . str_replace('https://www.avito.ru', '', $url),
                 ':scheme: https',
                 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
                 //'accept-encoding: gzip, deflate, br',
                 'accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6,vi;q=0.5',
                 'cache-control: max-age=0',
-                'cookie: '.implode('; ', $cookie),
+                'cookie: ' . implode('; ', $cookie),
                 'upgrade-insecure-requests: 1',
-                'referer: '.$url,
-                'user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'.rand(60,72).'.0.'.rand(1000,9999).'.121 Safari/537.36'
+                'referer: ' . $url,
+                'user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/' . rand(60, 72) . '.0.' . rand(1000, 9999) . '.121 Safari/537.36'
             );
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
@@ -198,8 +198,7 @@ class Curl {
             $this->header = substr($content, 0, $headerSize);
             $content = substr($content, $headerSize);
              */
-            if ($this->sleepMin > 0)
-            {
+            if ($this->sleepMin > 0) {
                 sleep(rand($this->sleepMin, $this->sleepMax));
             }
 
@@ -209,29 +208,25 @@ class Curl {
             curl_close($ch);
 
 
-            if (strlen($content) > 1000)
-            {
+            if (strlen($content) > 1000) {
                 $this->setCache($content, $cacheId);
                 //echo 'Кол-во символов ('.strlen($content).')'.PHP_EOL;
             }
-                /*
-                echo 'Прокси ('.$proxy.')'.PHP_EOL;
-                echo 'Код ответа ('.$http_code.')'.PHP_EOL;
-                echo 'Объем символов ('.strlen($content).')'.PHP_EOL;
-                */
+            /*
+            echo 'Прокси ('.$proxy.')'.PHP_EOL;
+            echo 'Код ответа ('.$http_code.')'.PHP_EOL;
+            echo 'Объем символов ('.strlen($content).')'.PHP_EOL;
+            */
 
-                $step++;
-                //echo (strlen($content));
-                // обход бана и любого другого ответа серва, кроме 200, контента в 1 объявлении чуть больше 100к символов, на всей странице
-                // около 1 ляма символов, потому функция подходит для парсинга статы и всей страницы
-                $try = ((($step < $steps) && ($http_code != 200)) || (strlen($content) < 100000));
-                // если дошли до конца то прокси кончились
-                if ($step==$steps)
-                {
-                echo '<h2 class="text-danger">Прокси закончились</h2>';
-                exit;
-                }
+            $step++;
 
+            //echo (strlen($content));
+            // обход бана и любого другого ответа серва, кроме 200, контента в 1 объявлении чуть больше 100к символов, на всей странице
+            // около 1 ляма символов, потому функция подходит для парсинга статы и всей страницы
+            $try = ((($step < $steps) && ($http_code != 200)) || (strlen($content) < 100000));
+            // если дошли до конца то прокси кончились
+            if ($step == $steps)
+            {exit;}
         }
         return $content;
     }
@@ -348,11 +343,6 @@ class Curl {
             $step++;
             //в 1 объявлении больше 3к символов должно быть, там в районе 8-9к может быть и меньше
             $try = ((($step < $steps) && ($http_code != 200)) || (strlen($content) < 3000));
-            if ($step==$steps)
-            {
-                echo '<h2 class="text-danger">Прокси закончились</h2>';
-                exit;
-            }
         }
         return $content;
     }

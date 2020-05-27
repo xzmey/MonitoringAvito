@@ -16,6 +16,7 @@ CREATE TABLE prices (
       price_id INT AUTO_INCREMENT PRIMARY KEY,
       value int,
       url_ad char(191),
+      url_req char(191),
       user_id int,
       FOREIGN KEY (user_id) REFERENCES vk_users(user_id)
 );
@@ -24,6 +25,7 @@ CREATE TABLE avg_price (
     user_id INT,
     parse_date date,
     price float,
+    url_req char(191),
     FOREIGN KEY (user_id) REFERENCES vk_users(user_id)
 );
   );*/
