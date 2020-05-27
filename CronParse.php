@@ -9,7 +9,7 @@ require 'db.php';
 error_reporting(0); // отключаем вывод ошибки
 
 const VK_KEY = "4dec5adac64862cecd0ebf2cef7e2aa01bb1e86b42abf2df5731c299d7d1204b80173798e8458dc7243b1";  // Токен сообщества
-const ACCESS_KEY = "6306747e";  // ключ из сообщества
+const ACCESS_KEY = "bf108206";  // ключ из сообщества
 const VERSION = "5.0"; // Версия API VK
 
 $vk = new vk_api(VK_KEY, VERSION);
@@ -32,7 +32,7 @@ while($row = mysqli_fetch_array($sql))
 
     // цикл из url, которые из бд
 
-foreach ($urlsAll as $url=>$value)
+foreach ($urlsAll as $urlAD=>$value)
 {
     // для проверки , если url содержит больше 5 страниц или кривой
     $select = mysqli_query($link, "SELECT `user_id` FROM `requests` WHERE `url_request` = '$value'");
@@ -96,14 +96,14 @@ foreach ($urlsAll as $url=>$value)
             ✅ Дата подачи: {$ad['date']}
             ✅ Год(если авто): {$ad['year']}
             ✅ URL объявления- {$urlAd} 
-            ✅ Посмотреть остальные объявления тут -  http://82f6f616.ngrok.io
+            ✅ Посмотреть остальные объявления тут -  http://ae839705.ngrok.io
             Держим вас в курсе🤙🏻
             ");
             sleep(rand(1,4));
             }
             if ($newCount==10)
             {
-                $vk->sendMessage($id['user_id'], "У вас больше 10 новых объявлений, загляните на станицу -  http://82f6f616.ngrok.io/avito.php     
+                $vk->sendMessage($id['user_id'], "У вас больше 10 новых объявлений, загляните на станицу -  http://ae839705.ngrok.io/avito.php     
             ");
             }
         }
@@ -122,6 +122,15 @@ foreach ($urlsAll as $url=>$value)
 }
 
 /*для задания*/
+
+/*
+ *
+ * ДИНАМИКА ЦЕНА ОТСЛЕЖИВАЕТСЯ, ТОЛЬКО ЕСЛИ ПОЯВИЛИСЬ НОВЫЕ ОБЪЯВЛЕНИЯ
+ *
+*/
+
+
+
 $date = date("Y-m-d");// дата парсинга
 
 // если дата не сегодняшняя, то сделать insert с новыми данными
@@ -180,6 +189,7 @@ foreach ($Requests as $request=>$req) {
         } while (mysqli_more_results($link) && mysqli_next_result($link));
     }
     //var_dump($medianPrice[0]);
+    //var_dump($req);
 
     //$medianPrice[0] - тут лежит медиана для юзера
     $priceResult = (double)$medianPrice[0];
@@ -198,6 +208,8 @@ foreach ($Requests as $request=>$req) {
     */
     //$maxDate[0]- псоледняя дата парсинга для user_id
     // если count() с таким url_req и по такой дате >1, то не записываем
+    //var_dump($countUrls[0]);
+
     if ($countUrls[0]<1) {
         $insertData = mysqli_query($link, "INSERT INTO `avg_price`(user_id,parse_date,price,url_req) VALUES('{$user_id['user_id']}','$date','$priceResult','$req')");
     }

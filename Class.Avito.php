@@ -86,6 +86,9 @@ class Avito
         //у url не больше 5 страниц, так как возможен бан(и какой смысл мониторить если и так много вариантов)
         $pagination = preg_split($pg = '~<span data-marker="page~is',$content);
 
+        //echo 'Pagination    '.( count($pagination));
+        //echo 'URL: '.$url;
+
         if (count($pagination) < 6)
         {
             // если есть пагинация на странице
