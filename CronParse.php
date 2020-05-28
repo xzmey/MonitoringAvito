@@ -9,7 +9,7 @@ require 'db.php';
 error_reporting(0); // отключаем вывод ошибки
 
 const VK_KEY = "4dec5adac64862cecd0ebf2cef7e2aa01bb1e86b42abf2df5731c299d7d1204b80173798e8458dc7243b1";  // Токен сообщества
-const ACCESS_KEY = "bf108206";  // ключ из сообщества
+const ACCESS_KEY = "a90399a4";  // ключ из сообщества
 const VERSION = "5.0"; // Версия API VK
 
 $vk = new vk_api(VK_KEY, VERSION);
@@ -32,7 +32,7 @@ while($row = mysqli_fetch_array($sql))
 
     // цикл из url, которые из бд
 
-foreach ($urlsAll as $urlAD=>$value)
+foreach ($urlsAll as $url=>$value)
 {
     // для проверки , если url содержит больше 5 страниц или кривой
     $select = mysqli_query($link, "SELECT `user_id` FROM `requests` WHERE `url_request` = '$value'");
@@ -96,14 +96,14 @@ foreach ($urlsAll as $urlAD=>$value)
             ✅ Дата подачи: {$ad['date']}
             ✅ Год(если авто): {$ad['year']}
             ✅ URL объявления- {$urlAd} 
-            ✅ Посмотреть остальные объявления тут -  http://ae839705.ngrok.io
+            ✅ Посмотреть остальные объявления тут -  http://6ed7f59b6397.ngrok.io
             Держим вас в курсе🤙🏻
             ");
             sleep(rand(1,4));
             }
             if ($newCount==10)
             {
-                $vk->sendMessage($id['user_id'], "У вас больше 10 новых объявлений, загляните на станицу -  http://ae839705.ngrok.io/avito.php     
+                $vk->sendMessage($id['user_id'], "У вас больше 10 новых объявлений, загляните на станицу -  http://6ed7f59b6397.ngrok.io     
             ");
             }
         }
@@ -198,14 +198,15 @@ foreach ($Requests as $request=>$req) {
     var_dump($user_id['user_id']);
     */
     // последняя дата для юзера..
-    $maxDate = mysqli_fetch_array((mysqli_query($link, "SELECT MAX(`parse_date`) FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}'")));
+    //$maxDate = mysqli_fetch_array((mysqli_query($link, "SELECT MAX(`parse_date`) FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}'")));
 
-    $countUrls = ( mysqli_fetch_array((mysqli_query($link, "SELECT COUNT(`url_req`) FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}' AND `parse_date` = '{$maxDate[0]}' AND `url_req` ='$req' "))));
+    $countUrls = ( mysqli_fetch_array((mysqli_query($link, "SELECT COUNT(`url_req`) FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}' AND `parse_date` = '$date' AND `url_req` ='$req' "))));
     /*
     var_dump($req);
     var_dump($maxDate[0]);
     var_dump($countUrls[0]);
     */
+
     //$maxDate[0]- псоледняя дата парсинга для user_id
     // если count() с таким url_req и по такой дате >1, то не записываем
     //var_dump($countUrls[0]);

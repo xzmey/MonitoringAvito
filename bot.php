@@ -4,7 +4,7 @@ include "vk_api.php";
 require $_SERVER['DOCUMENT_ROOT'].'/db.php';
 
 const VK_KEY = "4dec5adac64862cecd0ebf2cef7e2aa01bb1e86b42abf2df5731c299d7d1204b80173798e8458dc7243b1";  // Токен сообщества
-const ACCESS_KEY = "bf108206";  // Тот самый ключ из сообщества
+const ACCESS_KEY = "a90399a4";  // Тот самый ключ из сообщества
 const VERSION = "5.0"; // Версия API VK
 error_reporting(0);
 
