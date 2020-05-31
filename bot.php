@@ -3,11 +3,14 @@ include "vk_api.php";
 include 'pChart/pData.class.php';
 include 'pChart/pCache.class.php';
 include 'pChart/pChart.class.php';
+include 'config.php';// конфиг
 require $_SERVER['DOCUMENT_ROOT'].'/db.php';
 
-const VK_KEY = "4dec5adac64862cecd0ebf2cef7e2aa01bb1e86b42abf2df5731c299d7d1204b80173798e8458dc7243b1";  // Токен сообщества
-const ACCESS_KEY = "a024f3e1";  // Тот самый ключ из сообщества
-const VERSION = "5.0"; // Версия API VK
+
+
+const VK_KEY = VK_KEY;  // Токен сообщества
+const ACCESS_KEY = ACCESS_KEY;  // Тот самый ключ из сообщества
+const VERSION = VERSION; // Версия API VK
 
 error_reporting(0);
 $vk = new vk_api(VK_KEY, VERSION);
@@ -52,6 +55,7 @@ if ($data->type == 'message_new')
         }// для задания
 
     }
+
     // оплата, если отправилась команда, то отправить оповещение админу
     if($cmd == '!оплатил' || $cmd == 'ОПЛАТИЛ' || $cmd == 'оплатил' ||  $cmd == 'Оплатил')
     {
@@ -64,7 +68,7 @@ if ($data->type == 'message_new')
             // оповещения для админа об оплате
             // id - мой
             $vk->sendMessage('580612278', " https://vk.com/id{$id} оплатил подписку,
-         проверить оплату и поменять ему статус   http://ae839705.ngrok.io/adminpage.php‼
+         проверить оплату и поменять ему статус   ".URL."/adminpage.php‼
             ");
 
         }
@@ -221,7 +225,7 @@ if ($data->type == 'message_new')
                 $number = $req + 1;
                 $graph->Render("graph{$number}.png");
                 $vk->sendMessage($id, "💬Динамика цены👉🏻
-            http://963e9f4e9779.ngrok.io/graph{$number}.png
+            ".URL."/graph{$number}.png
             ____________________________________
             ✅по запросу👉🏻 {$r}
             {$row['price']}

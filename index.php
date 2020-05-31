@@ -5,7 +5,7 @@
 // для графика https://www.avito.ru/izhevsk/telefony/aksessuary-ASgBAgICAUSeAvZN?q=%D1%87%D0%B5%D1%85%D0%BE%D0%BB+%D0%BD%D0%B0+iphone+7 , https://www.avito.ru/izhevsk/krasota_i_zdorove?geoCoords=56.85230160470812%2C53.205877562122744&radius=5&q=%D0%BC%D0%B0%D1%81%D0%BA%D0%B0+%D0%BC%D0%B5%D0%B4%D0%B8%D1%86%D0%B8%D0%BD%D1%81%D0%BA%D0%B0%D1%8F
 
 
-/* таблица для бд
+/* таблицы для бд
 
 CREATE TABLE vk_users (
       user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,7 +28,8 @@ CREATE TABLE avg_price (
     url_req char(300),
     FOREIGN KEY (user_id) REFERENCES vk_users(user_id)
 );
-  );*/
+
+  */
 
 
 
