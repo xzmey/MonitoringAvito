@@ -238,19 +238,23 @@ if ($data->type == 'message_new')
     //  если юзер закончит мониторинг, надо добавить условие, что эта ф-я доступная только тем кто оплатил
     if($cmd == 'Стоп' || $cmd == 'СТОП' || $cmd == 'стоп' ||  $cmd == '!стоп')
     {
-        $linkDel = mysqli_connect ("localhost","mysql","mysql","avito");
-        // доделать удаление урл из бд
-        $sql = mysqli_query($linkDel, "UPDATE `users` SET  `urlcount` = '0' WHERE `user_id` = '$id'") or die;
-        $sqlToDel = mysqli_query($linkDel, "SELECT `url_request` FROM `requests` WHERE `user_id` = '$id'") or die;
-        $sqlToDel2 = mysqli_query($linkDel, "DELETE FROM `requests` WHERE `user_id` = '$id'") or die;
+        if ( R::findOne('requests', 'user_id = ?', array($id))) {
+            $linkDel = mysqli_connect("localhost", "mysql", "mysql", "avito");
+            // доделать удаление урл из бд
+            $sql = mysqli_query($linkDel, "UPDATE `users` SET  `urlcount` = '0' WHERE `user_id` = '$id'") or die;
+            $sqlToDel = mysqli_query($linkDel, "SELECT `url_request` FROM `requests` WHERE `user_id` = '$id'") or die;
+            $sqlToDel2 = mysqli_query($linkDel, "DELETE FROM `requests` WHERE `user_id` = '$id'") or die;
 
-        while($rowSqlDel = mysqli_fetch_array($sqlToDel))
-        {
-            // тут по url_request удалять url_ads
-            $delSql=$rowSqlDel['url_request'];
-            $Del =  mysqli_query($linkDel, "DELETE FROM `ads` WHERE `url_request` = '$delSql'") or die;
+            while ($rowSqlDel = mysqli_fetch_array($sqlToDel)) {
+                // тут по url_request удалять url_ads
+                $delSql = $rowSqlDel['url_request'];
+                $Del = mysqli_query($linkDel, "DELETE FROM `ads` WHERE `url_request` = '$delSql'") or die;
+            }
+            $vk->sendMessage($id, "Мониторинг завершен
+            ");
         }
-        $vk->sendMessage($id, "Мониторинг завершен
+        else
+            $vk->sendMessage($id, "💬Вам не доступна эта команда
             ");
     }
 
