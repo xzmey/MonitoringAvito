@@ -2,7 +2,7 @@
 // https://www.avito.ru/izhevsk/tovary_dlya_kompyutera/setevoe_oborudovanie-ASgBAgICAUTGB75O?geoCoords=56.852593%2C53.204843&radius=1&q=%D0%BC%D0%BE%D0%B4%D0%B5%D0%BC
 // https://www.avito.ru/izhevsk/nastolnye_kompyutery?pmax=7000
 // https://www.avito.ru/izhevsk/avtomobili/bmw-ASgBAgICAUTgtg3klyg?radius=0
-
+// для графика https://www.avito.ru/izhevsk/telefony/aksessuary-ASgBAgICAUSeAvZN?q=%D1%87%D0%B5%D1%85%D0%BE%D0%BB+%D0%BD%D0%B0+iphone+7 , https://www.avito.ru/izhevsk/krasota_i_zdorove?geoCoords=56.85230160470812%2C53.205877562122744&radius=5&q=%D0%BC%D0%B0%D1%81%D0%BA%D0%B0+%D0%BC%D0%B5%D0%B4%D0%B8%D1%86%D0%B8%D0%BD%D1%81%D0%BA%D0%B0%D1%8F
 
 
 /* таблица для бд

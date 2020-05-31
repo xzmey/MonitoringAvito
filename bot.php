@@ -1,13 +1,15 @@
 <?php
-
 include "vk_api.php";
+include 'pChart/pData.class.php';
+include 'pChart/pCache.class.php';
+include 'pChart/pChart.class.php';
 require $_SERVER['DOCUMENT_ROOT'].'/db.php';
 
 const VK_KEY = "4dec5adac64862cecd0ebf2cef7e2aa01bb1e86b42abf2df5731c299d7d1204b80173798e8458dc7243b1";  // Токен сообщества
-const ACCESS_KEY = "a90399a4";  // Тот самый ключ из сообщества
+const ACCESS_KEY = "a024f3e1";  // Тот самый ключ из сообщества
 const VERSION = "5.0"; // Версия API VK
-error_reporting(0);
 
+error_reporting(0);
 $vk = new vk_api(VK_KEY, VERSION);
 $data = json_decode(file_get_contents('php://input'));
 
@@ -74,9 +76,18 @@ if ($data->type == 'message_new')
     }
 
     if(mb_substr($cmd,0,3) == 'URL' || mb_substr($cmd,0,3) == 'url')
-
     {
         $url = mb_substr($message, 4);
+        $parse_url = parse_url($url);
+        // если мобильная версия url
+        if (stristr($parse_url['host'],'m') == true)
+        {
+            $url_new['host'] = substr($parse_url['host'],2);
+            $url_new['query'] = substr($parse_url['query'],5);
+            $url_new = $parse_url['scheme'].'://www.'.$url_new['host'].$parse_url['path'].'?q'.$url_new['query'];
+            $url = $url_new;
+        }
+
         $link = mysqli_connect ("localhost","mysql","mysql","avito");
         $sql = mysqli_query($link, "SELECT `status` FROM `users` WHERE `user_id` = '$id'");
         $sqlUrlCount = mysqli_query($link, "SELECT `urlcount` FROM `users` WHERE `user_id` = '$id'");
@@ -132,6 +143,98 @@ if ($data->type == 'message_new')
             ");
     }
 
+
+    if($cmd == '!динамика' || $cmd == 'Динамика' || $cmd == 'динамика' ||  $cmd == 'Динамика')
+    {
+        if ( R::findOne('requests', 'user_id = ?', array($id))) {
+            $link = mysqli_connect("localhost", "mysql", "mysql", "avito");
+            $urls = mysqli_query($link, "SELECT `url_request` FROM `requests` WHERE  `user_id`= '$id'");
+
+            $Requests = [];
+            while ($rowUrls = mysqli_fetch_array($urls)) {
+                array_push($Requests, $rowUrls[0]);
+            }
+            foreach ($Requests as $req => $r) {
+                $selectId = mysqli_query($link, "SELECT `user_id` FROM `vk_users` WHERE `vk_id`='{$id}'");
+                $user_id = mysqli_fetch_array($selectId);
+                $myData = new pData();
+                $sql = mysqli_query($link, "SELECT `parse_date`,`price` FROM `avg_price` WHERE `user_id`='{$user_id['user_id']}' AND `url_req`='$r'");
+
+
+                while ($row = mysqli_fetch_array($sql)) {
+
+                    var_dump($row['price']);
+                    var_dump($row['parse_date']);
+
+                    $myData->AddPoint($row['price'], "price");
+                    $myData->AddPoint($row['parse_date'], "date");
+
+                }
+
+// x — это ось абсцисс, а y —  ось ординат
+
+//устанавливаем точки с датами
+//на ось абсцисс
+                $myData->SetAbsciseLabelSerie("date");
+//помечаем данные как предназначеные для
+//отображения
+                $myData->AddSerie("price");
+//создаем график шириной в 1000 и высотой в 500 px
+                $graph = new pChart(1000, 500);
+//устанавливаем шрифт и размер шрифта
+                $graph->setFontProperties("Fonts/tahoma.ttf", 8);
+//устанавливаем имена
+                $myData->SetSerieName(
+                    mb_convert_encoding("Сумма", 'utf-8', 'utf-8'),
+                    "price");
+//координаты левой верхней вершины и правой нижней
+//вершины графика
+                $graph->setGraphArea(85, 30, 950, 400);
+//рисуем заполненный четырехугольник
+                $graph->drawFilledRoundedRectangle(7, 7, 993, 493, 5, 240,
+                    240, 240);
+//теперь незаполненный для эффекта тени
+                $graph->drawRoundedRectangle(5, 5, 995, 495, 5, 230,
+                    230, 230);
+//устанавливаем данные для графиков
+                $graph->drawScale($myData->GetData(),
+                    $myData->GetDataDescription(),
+                    SCALE_NORMAL, 150, 150, 150, true, 0, 2);
+//рисуем сетку для графика
+                $graph->drawGrid(4, TRUE, 230, 230, 230, 50);
+//прорисовываем линейные графики
+                $graph->drawLineGraph($myData->GetData(),
+                    $myData->GetDataDescription());
+// рисуем точки на графике
+                $graph->drawPlotGraph($myData->GetData(),
+                    $myData->GetDataDescription(), 4, 0, 255, 255, 255);
+//ложим легенду
+                $graph->drawLegend(90, 35, $myData->GetDataDescription(), 150, 150, 150);
+//Пишем заголовок
+                $graph->setFontProperties("Fonts/tahoma.ttf", 13);
+                $graph->drawTitle(480, 22,
+                    mb_convert_encoding("Динамика цены",
+                        'utf-8', 'utf-8'),
+                    50, 50, 50, -1, -1, false);
+//выводим в браузер
+//$graph->Stroke();
+                $number = $req + 1;
+                $graph->Render("graph{$number}.png");
+                $vk->sendMessage($id, "💬Динамика цены👉🏻
+            http://963e9f4e9779.ngrok.io/graph{$number}.png
+            ____________________________________
+            ✅по запросу👉🏻 {$r}
+            {$row['price']}
+            
+                    ");
+            }
+        }
+        else
+            $vk->sendMessage($id, "💬Вам не доступна эта команда
+            ");
+    }
+
+
     //  если юзер закончит мониторинг, надо добавить условие, что эта ф-я доступная только тем кто оплатил
     if($cmd == 'Стоп' || $cmd == 'СТОП' || $cmd == 'стоп' ||  $cmd == '!стоп')
     {
@@ -151,10 +254,12 @@ if ($data->type == 'message_new')
             ");
     }
 
-    if (($cmd != 'СТАРТ'&&  $cmd != 'старт' && $cmd != 'cnfhn' &&  $cmd != '!старт')
+    if
+    (($cmd != 'СТАРТ'&&  $cmd != 'старт' && $cmd != 'cnfhn' &&  $cmd != '!старт')
         && ($cmd != '!оплатил' && $cmd != 'ОПЛАТИЛ' && $cmd != 'оплатил' &&  $cmd != 'Оплатил')
         && ($cmd != 'Стоп' && $cmd != 'СТОП' && $cmd != 'стоп' &&  $cmd != '!стоп')
-        && (mb_substr($cmd,0,3) != 'URL' && mb_substr($cmd,0,3) != 'url'))
+        && (mb_substr($cmd,0,3) != 'URL' && mb_substr($cmd,0,3) != 'url')
+        && ($cmd != '!динамика' && $cmd != 'Динамика' && $cmd != 'динамика' &&  $cmd != 'Динамика'))
     {
     $vk->sendMessage($id, "💬 Привет, {$first_name}
             
